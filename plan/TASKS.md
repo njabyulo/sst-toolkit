@@ -392,76 +392,76 @@ This document tracks all tasks needed to implement the architecture improvements
 
 ### Tasks
 
-- [ ] ⏳ **Integrate explorer with core**
-  - [ ] Update `apps/explorer/src/App.tsx` to use `@sst-toolkit/core`
-  - [ ] Update `apps/explorer/src/components/workflow/WorkflowCanvas.tsx` to use `@sst-toolkit/core`
-  - [ ] Remove all duplicate code
-  - [ ] Verify explorer still works
-  - [ ] Test all explorer features
+- [x] ✅ **Integrate explorer with core**
+  - [x] Update `apps/explorer/src/App.tsx` to use `@sst-toolkit/core`
+  - [x] Update `apps/explorer/src/components/workflow/WorkflowCanvas.tsx` to use `@sst-toolkit/core`
+  - [x] Remove all duplicate code
+  - [x] Verify explorer still works
+  - [x] Test all explorer features
 
-- [ ] ⏳ **Add plugin marketplace browser**
-  - [ ] Create `apps/explorer/src/components/plugin/PluginMarketplace.tsx`
-    - [ ] Display available plugins
-    - [ ] Search and filter plugins
-    - [ ] Show plugin information
-    - [ ] Install plugin button
-  - [ ] Create `apps/explorer/src/components/plugin/PluginCard.tsx`
-    - [ ] Display plugin card
-    - [ ] Show plugin metadata
-    - [ ] Show install button
-  - [ ] Create `apps/explorer/src/components/plugin/PluginDetail.tsx`
-    - [ ] Display plugin details
-    - [ ] Show plugin documentation
-    - [ ] Show plugin dependencies
-  - [ ] Add plugin marketplace tab to explorer
+- [x] ✅ **Add plugin marketplace browser**
+  - [x] Create `apps/explorer/src/components/plugin/PluginMarketplace.tsx`
+    - [x] Display available plugins
+    - [x] Search and filter plugins
+    - [x] Show plugin information
+    - [x] Install plugin button
+  - [x] Create `apps/explorer/src/components/plugin/PluginCard.tsx`
+    - [x] Display plugin card
+    - [x] Show plugin metadata
+    - [x] Show install button
+  - [x] Create `apps/explorer/src/components/plugin/PluginDetail.tsx`
+    - [x] Display plugin details
+    - [x] Show plugin documentation
+    - [x] Show plugin dependencies
+  - [x] Add plugin marketplace tab to explorer
 
-- [ ] ⏳ **Show installed plugins**
-  - [ ] Create `apps/explorer/src/components/plugin/InstalledPlugins.tsx`
-    - [ ] List installed plugins
-    - [ ] Show plugin status
-    - [ ] Show plugin version
-  - [ ] Create `apps/explorer/src/lib/plugin-loader.ts`
-    - [ ] Load installed plugins
-    - [ ] Parse plugin metadata
-    - [ ] Validate plugins
-  - [ ] Add installed plugins section to explorer
+- [x] ✅ **Show installed plugins**
+  - [x] Create `apps/explorer/src/components/plugin/InstalledPlugins.tsx`
+    - [x] List installed plugins
+    - [x] Show plugin status
+    - [x] Show plugin version
+  - [x] Create `apps/explorer/src/lib/plugin-loader.ts`
+    - [x] Load installed plugins
+    - [x] Parse plugin metadata
+    - [x] Validate plugins
+  - [x] Add installed plugins section to explorer
 
-- [ ] ⏳ **Visualize plugin dependencies**
-  - [ ] Create `apps/explorer/src/components/plugin/PluginDependencies.tsx`
-    - [ ] Display plugin dependency graph
-    - [ ] Show dependency relationships
-    - [ ] Visualize dependency tree
-  - [ ] Integrate with workflow canvas
-    - [ ] Show plugins in workflow
-    - [ ] Show plugin dependencies in workflow
-    - [ ] Visualize plugin relationships
+- [x] ✅ **Visualize plugin dependencies**
+  - [x] Create `apps/explorer/src/components/plugin/PluginDependencies.tsx`
+    - [x] Display plugin dependency graph
+    - [x] Show dependency relationships
+    - [x] Visualize dependency tree
+  - [x] Integrate with workflow canvas
+    - [x] Show plugins in workflow
+    - [x] Show plugin dependencies in workflow
+    - [x] Visualize plugin relationships
 
-- [ ] ⏳ **Add plugin management UI**
-  - [ ] Create `apps/explorer/src/components/plugin/PluginManager.tsx`
-    - [ ] Install plugin UI
-    - [ ] Remove plugin UI
-    - [ ] Update plugin UI
-  - [ ] Add plugin management actions
-    - [ ] Install plugin
-    - [ ] Remove plugin
-    - [ ] Update plugin
+- [x] ✅ **Add plugin management UI**
+  - [x] Create `apps/explorer/src/components/plugin/PluginManager.tsx`
+    - [x] Install plugin UI
+    - [x] Remove plugin UI
+    - [x] Update plugin UI
+  - [x] Add plugin management actions
+    - [x] Install plugin
+    - [x] Remove plugin
+    - [x] Update plugin
 
-- [ ] ⏳ **Update explorer navigation**
-  - [ ] Add "Plugins" tab to explorer
-  - [ ] Add plugin marketplace to navigation
-  - [ ] Add installed plugins to navigation
-  - [ ] Update routing
+- [x] ✅ **Update explorer navigation**
+  - [x] Add "Plugins" tab to explorer
+  - [x] Add plugin marketplace to navigation
+  - [x] Add installed plugins to navigation
+  - [x] Update routing
 
-- [ ] ⏳ **Test and verify**
-  - [ ] Test explorer still works
-  - [ ] Test plugin marketplace displays correctly
-  - [ ] Test installed plugins display correctly
-  - [ ] Test plugin dependencies visualization
-  - [ ] Test plugin management UI
-  - [ ] Test all explorer features
-  - [ ] Run `pnpm build` to verify no build errors
-  - [ ] Run `pnpm lint` to verify no linting errors
-  - [ ] Run `pnpm type-check` to verify no type errors
+- [x] ✅ **Test and verify**
+  - [x] Test explorer still works
+  - [x] Test plugin marketplace displays correctly
+  - [x] Test installed plugins display correctly
+  - [x] Test plugin dependencies visualization
+  - [x] Test plugin management UI
+  - [x] Test all explorer features
+  - [x] Run `pnpm build` to verify no build errors
+  - [x] Run `pnpm lint` to verify no linting errors
+  - [x] Run `pnpm type-check` to verify no type errors
 
 ### Deliverables
 
@@ -575,14 +575,14 @@ This document tracks all tasks needed to implement the architecture improvements
 
 **Last Updated**: 2024-11-10
 
-**Overall Progress**: ~27% (32/150+ tasks completed)
+**Overall Progress**: ~33% (39/150+ tasks completed)
 
 **Phase Progress**:
 - Phase 1: 100% (8/8 tasks) ✅
 - Phase 2: 100% (8/8 tasks) ✅
 - Phase 3: 100% (8/8 tasks) ✅
 - Phase 4: 100% (7/7 tasks) ✅
-- Phase 5: 0% (0/6 tasks)
+- Phase 5: 100% (7/7 tasks) ✅
 - Additional: 0% (0/12 tasks)
 
 ---
