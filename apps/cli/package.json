@@ -1,0 +1,27 @@
+{
+  "name": "@sst-toolkit/cli",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CLI tool for SST Toolkit",
+  "type": "module",
+  "bin": {
+    "sst-toolkit": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "dependencies": {
+    "@sst-toolkit/shared": "workspace:*",
+    "commander": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}
+
