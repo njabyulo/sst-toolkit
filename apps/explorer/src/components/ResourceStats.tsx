@@ -124,7 +124,7 @@ export function ResourceStats({ resources }: IResourceStatsProps) {
     return resources.filter((resource) => {
       const hasParent = resource.parent !== undefined && resource.parent !== null;
       
-      if (hasParent) {
+      if (hasParent && resource.parent) {
         // Check if this resource's parent is also in our resource list
         const parentExists = allUrns.has(resource.parent);
         if (parentExists) {

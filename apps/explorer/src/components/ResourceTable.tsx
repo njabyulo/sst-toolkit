@@ -97,13 +97,9 @@ export function ResourceTable({ resources, onSelectResource, selectedUrn }: IRes
 
   const expandAllGroups = useCallback(() => {
     setExpandedGroups((prev) => {
-      if (groupedData && groupedData.length > 0) {
-        const allKeys = new Set(groupedData.map((g) => g.key));
-        return allKeys;
-      }
       return prev;
     });
-  }, [groupedData]);
+  }, []);
 
   const collapseAllGroups = useCallback(() => {
     setExpandedGroups(new Set());
@@ -209,26 +205,20 @@ export function ResourceTable({ resources, onSelectResource, selectedUrn }: IRes
     
     filteredAndSorted.forEach((resource) => {
       let groupKey: string;
-      let groupLabel: string;
 
       switch (groupBy) {
         case "category":
           const category = State.getResourceTypeCategory(resource.type, resource);
           groupKey = category;
-          // Extract sub-category (everything after " > ")
-          groupLabel = category.includes(" > ") ? category.split(" > ")[1] : category;
           break;
         case "provider":
           groupKey = State.getResourceProvider(resource.type);
-          groupLabel = groupKey;
           break;
         case "type":
           groupKey = State.getResourceTypeDisplay(resource.type);
-          groupLabel = groupKey;
           break;
         case "status":
           groupKey = resource.custom ? "Custom" : "Standard";
-          groupLabel = groupKey;
           break;
         default:
           return;
@@ -714,7 +704,7 @@ export function ResourceTable({ resources, onSelectResource, selectedUrn }: IRes
                   </TableCell>
                 </TableRow>
               ) : (
-                paginatedData.map((item, index) => {
+                paginatedData.map((item) => {
                   // Check if item is a group by checking if it has the IGroupedData structure
                   if (groupedData && typeof item === "object" && "key" in item && "count" in item && "resources" in item) {
                     // It's a group

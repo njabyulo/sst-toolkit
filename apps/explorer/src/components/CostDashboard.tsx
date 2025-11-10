@@ -22,8 +22,6 @@ export function CostDashboard({ resources }: ICostDashboardProps) {
   // Filter resources to ensure no duplicates in cost calculation
   // Only count actual AWS billable resources, not SST wrapper resources that have children
   const filteredResources = useMemo(() => {
-    // Build a set of all resource URNs to check parent relationships
-    const allUrns = new Set(resources.map((r) => r.urn));
     // Build a map of URN to resource for O(1) lookups
     const urnToResource = new Map<string, ISSTResource>();
     // Build a map of parent URN to children count

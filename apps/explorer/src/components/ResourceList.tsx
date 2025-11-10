@@ -242,7 +242,7 @@ export function ResourceList({
     allResources.forEach((node) => {
       const hasParent = node.resource.parent !== undefined && node.resource.parent !== null;
       
-      if (hasParent) {
+      if (hasParent && node.resource.parent) {
         // Check if this resource's parent is also in our resource list
         const parentExists = allUrns.has(node.resource.parent);
         if (parentExists) {

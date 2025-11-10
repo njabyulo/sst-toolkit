@@ -66,7 +66,7 @@ const ResourceDetailContent = memo(function ResourceDetailContent({ resource }: 
   // Get remaining fields (not in important list) - use Set for O(1) lookup
   const remainingFields = useMemo(() => {
     return Object.entries(allData)
-      .filter(([key]) => !IMPORTANT_FIELDS_SET.has(key))
+      .filter(([key]) => !IMPORTANT_FIELDS_SET.has(key as typeof IMPORTANT_FIELDS[number]))
       .sort((a, b) => a[0].localeCompare(b[0]));
   }, [allData]);
 
