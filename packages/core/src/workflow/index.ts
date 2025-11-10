@@ -1,1 +1,1 @@
-export * as Workflow from "./workflow";
+export * from "./workflow";

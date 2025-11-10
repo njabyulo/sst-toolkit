@@ -1,1 +1,1 @@
-export * as Relationships from "./relationships";
+export * from "./relationships";

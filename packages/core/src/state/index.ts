@@ -1,1 +1,1 @@
-export * as State from "./state";
+export * from "./state";

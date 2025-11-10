@@ -8,20 +8,28 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
     },
     "./state": {
-      "types": "./src/state/index.ts",
-      "default": "./src/state/index.ts"
+      "types": "./dist/state/index.d.ts",
+      "import": "./dist/state/index.mjs",
+      "require": "./dist/state/index.js",
+      "default": "./dist/state/index.mjs"
     },
     "./relationships": {
-      "types": "./src/relationships/index.ts",
-      "default": "./src/relationships/index.ts"
+      "types": "./dist/relationships/index.d.ts",
+      "import": "./dist/relationships/index.mjs",
+      "require": "./dist/relationships/index.js",
+      "default": "./dist/relationships/index.mjs"
     },
     "./workflow": {
-      "types": "./src/workflow/index.ts",
-      "default": "./src/workflow/index.ts"
+      "types": "./dist/workflow/index.d.ts",
+      "import": "./dist/workflow/index.mjs",
+      "require": "./dist/workflow/index.js",
+      "default": "./dist/workflow/index.mjs"
     }
   },
   "scripts": {

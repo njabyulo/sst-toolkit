@@ -1,6 +1,7 @@
 import type { ISSTResource } from "@sst-toolkit/shared/types/sst";
 import type { IWorkflowNode, IWorkflow, TWorkflowNodeStatus } from "@sst-toolkit/shared/types/workflow";
-import * as State from "@sst-toolkit/shared/utils/state";
+import * as State from "../state/state";
+import * as Relationships from "../relationships/relationships";
 
 export function buildWorkflowNodes(
   resources: ISSTResource[],
@@ -145,7 +146,7 @@ function determineResourceStatus(resource: ISSTResource): TWorkflowNodeStatus {
 
 export function buildWorkflow(
   resources: ISSTResource[],
-  relationships: ReturnType<typeof import("@sst-toolkit/shared/utils/relationships").parseResourceRelationships>
+  relationships: ReturnType<typeof Relationships.parseResourceRelationships>
 ): IWorkflow {
   const nodes = buildWorkflowNodes(resources);
   const edges = relationships;
