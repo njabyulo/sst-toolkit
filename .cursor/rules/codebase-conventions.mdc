@@ -1,0 +1,98 @@
+---
+description: Codebase-wide conventions and standards for the project
+globs: 
+alwaysApply: true
+---
+# Codebase Conventions
+
+## Export Patterns
+
+- **index.ts files** (excluding db): Use namespace export pattern `export * as File from './file'`
+- **All index.ts files** must only use namespace exports and contain no other code
+- **Do NOT** re-export commonly used types/interfaces for convenience - import them directly from their source
+
+## Naming Conventions
+
+- **Interfaces**: Prefix all interfaces with `I` (e.g., `IUser`, `IMessageRepository`)
+- **Types**: Prefix all types with `T` (e.g., `TUser`, `TMessage`)
+- **Zod Schemas**: Prefix all zod schemas with `S` (e.g., `SUser`, `SMessage`)
+
+## Code Organization
+
+- **Interfaces**: All interfaces must be in `packages/shared/src`
+- **Types**: All types must be in `packages/shared/src`
+- **Zod Schemas**: All zod schemas must be in `packages/shared/src`
+
+## Code Quality
+
+### ESLint
+- **Avoid** `eslint-disable` and `eslint-ignore` comments
+- Fix linting issues properly instead of suppressing them
+
+### Performance
+- Improve time complexity (O(n)) where possible
+- Optimize algorithms and data structures
+
+### Backward Compatibility
+- Remove code with backward compatibility
+- Don't maintain deprecated code paths
+
+### Logging
+- Replace all `console.log` calls with proper logger
+- Use the project's logging infrastructure
+
+## TypeScript & SST
+
+### SST Types
+- Fix SST types using reference directive: `/// <reference path="../.sst/platform/config.d.ts" />`
+- Read SST documentation to understand proper type configuration
+
+### Type Documentation
+- Always read documentation for any types you're using
+- Ensure proper understanding before implementing
+
+## Build & Lint Process
+
+Before committing changes:
+
+1. **Run linting**:
+   ```bash
+   pnpm lint:code
+   pnpm lint:type
+   ```
+   Fix all issues before proceeding
+
+2. **Run build**:
+   ```bash
+   pnpm build
+   ```
+   Fix all build issues before proceeding
+
+## Git Practices
+
+- **Commit in chunks**: Make focused, logical commits
+- Group related changes together
+- Avoid large, monolithic commits
+- **No Co-Authored-By attributions**: Do not include Co-Authored-By in commit messages
+- **Commit message format**: Use conventional commit format:
+  - `feat`: New features
+  - `fix`: Bug fixes
+  - `refactor`: Code refactoring without functional changes
+  - `docs`: Documentation updates
+  - `test`: Adding or updating tests
+  - `chore`: Maintenance tasks
+
+## Code Comments
+
+- **Don't write unnecessary comments**: The codebase should be self-explanatory
+- Code should be clear enough that comments are not needed
+- Only add comments when they provide essential context that cannot be inferred from code
+
+## Design Principles
+
+- **Use SOLID principles**: Apply Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, and Dependency Inversion
+- **Use Gang of Four patterns**: Apply appropriate design patterns (Factory, Strategy, Repository, Adapter, Dependency Injection)
+- **Don't over-engineer**: Keep solutions simple and appropriate for the problem
+- **Self-explanatory code**: Write code that is clear and understandable without excessive documentation
+
+**Note:** For detailed SOLID principles, design patterns, and development best practices, see `development-patterns.mdc`
