@@ -1,0 +1,58 @@
+{
+  "name": "@sst-toolkit/community",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Community-maintained SST components for common use cases",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
+    },
+    "./bedrock-gateway": {
+      "types": "./dist/bedrock-gateway/index.d.ts",
+      "import": "./dist/bedrock-gateway/index.mjs",
+      "require": "./dist/bedrock-gateway/index.js",
+      "default": "./dist/bedrock-gateway/index.mjs"
+    },
+    "./open-webui": {
+      "types": "./dist/open-webui/index.d.ts",
+      "import": "./dist/open-webui/index.mjs",
+      "require": "./dist/open-webui/index.js",
+      "default": "./dist/open-webui/index.mjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "lint": "pnpm lint:type && pnpm lint:code",
+    "lint:code": "eslint .",
+    "lint:type": "tsc --noEmit",
+    "lint:fix": "eslint . --fix",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:unit": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@sst-toolkit/plugin-sdk": "workspace:*"
+  },
+  "peerDependencies": {
+    "@pulumi/aws": "^6.0.0",
+    "@pulumi/pulumi": "^3.0.0",
+    "sst": "^3.0.0"
+  },
+  "devDependencies": {
+    "@pulumi/pulumi": "^3.0.0",
+    "@vitest/coverage-v8": "catalog:",
+    "sst": "^3.0.0",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
+

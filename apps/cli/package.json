@@ -11,7 +11,9 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "lint": "eslint .",
+    "lint": "pnpm lint:type && pnpm lint:code",
+    "lint:code": "eslint .",
+    "lint:type": "tsc --noEmit",
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "test:unit": "vitest run",

@@ -11,7 +11,11 @@
       "persistent": true,
       "outputs": []
     },
-    "lint": {},
+    "lint": {
+      "dependsOn": ["lint:type", "lint:code"]
+    },
+    "lint:code": {},
+    "lint:type": {},
     "lint:fix": {
       "cache": false
     },

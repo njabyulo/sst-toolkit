@@ -17,7 +17,9 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
-    "lint": "turbo lint",
+    "lint": "turbo lint:type && turbo lint:code",
+    "lint:code": "turbo lint:code",
+    "lint:type": "turbo lint:type",
     "lint:fix": "turbo lint:fix",
     "test": "turbo test",
     "test:unit": "turbo test:unit",

@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "lint": "pnpm lint:type && pnpm lint:code",
+    "lint:code": "eslint .",
+    "lint:type": "tsc --noEmit",
+    "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "test": "vitest run",
     "test:unit": "vitest run",

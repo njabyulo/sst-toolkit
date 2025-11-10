@@ -23,6 +23,10 @@
       "types": "./src/component/index.ts",
       "default": "./src/component/index.ts"
     },
+    "./resources": {
+      "types": "./src/resources/index.ts",
+      "default": "./src/resources/index.ts"
+    },
     "./templates": {
       "types": "./src/templates/index.ts",
       "default": "./src/templates/index.ts"
@@ -38,7 +42,9 @@
   },
   "scripts": {
     "build": "tsup",
-    "lint": "eslint .",
+    "lint": "pnpm lint:type && pnpm lint:code",
+    "lint:code": "eslint .",
+    "lint:type": "tsc --noEmit",
     "lint:fix": "eslint . --fix",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
