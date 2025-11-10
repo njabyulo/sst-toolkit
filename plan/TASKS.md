@@ -19,58 +19,58 @@ This document tracks all tasks needed to implement the architecture improvements
 
 ### Tasks
 
-- [ ] ⏳ **Move state parsing from `packages/shared` to `packages/core`**
-  - [ ] Move `packages/shared/src/utils/state.ts` → `packages/core/src/state/state.ts`
-  - [ ] Update `packages/core/src/state/index.ts` to export state utilities
-  - [ ] Update all imports across codebase
-  - [ ] Remove state utilities from `packages/shared`
-  - [ ] Update `packages/shared/src/utils/index.ts`
+- [x] ✅ **Move state parsing from `packages/shared` to `packages/core`**
+  - [x] Move `packages/shared/src/utils/state.ts` → `packages/core/src/state/state.ts`
+  - [x] Update `packages/core/src/state/index.ts` to export state utilities
+  - [x] Update all imports across codebase
+  - [x] Remove state utilities from `packages/shared`
+  - [x] Update `packages/shared/src/utils/index.ts`
 
-- [ ] ⏳ **Move relationship detection from `packages/shared` to `packages/core`**
-  - [ ] Move `packages/shared/src/utils/relationships.ts` → `packages/core/src/relationships/relationships.ts`
-  - [ ] Update `packages/core/src/relationships/index.ts` to export relationship utilities
-  - [ ] Update all imports across codebase
-  - [ ] Remove relationship utilities from `packages/shared`
-  - [ ] Update `packages/shared/src/utils/index.ts`
+- [x] ✅ **Move relationship detection from `packages/shared` to `packages/core`**
+  - [x] Move `packages/shared/src/utils/relationships.ts` → `packages/core/src/relationships/relationships.ts`
+  - [x] Update `packages/core/src/relationships/index.ts` to export relationship utilities
+  - [x] Update all imports across codebase
+  - [x] Remove relationship utilities from `packages/shared`
+  - [x] Update `packages/shared/src/utils/index.ts`
 
-- [ ] ⏳ **Move workflow building from `packages/shared` to `packages/core`**
-  - [ ] Move `packages/shared/src/utils/workflow.ts` → `packages/core/src/workflow/workflow.ts`
-  - [ ] Update `packages/core/src/workflow/index.ts` to export workflow utilities
-  - [ ] Update all imports across codebase
-  - [ ] Remove workflow utilities from `packages/shared`
-  - [ ] Update `packages/shared/src/utils/index.ts`
+- [x] ✅ **Move workflow building from `packages/shared` to `packages/core`**
+  - [x] Move `packages/shared/src/utils/workflow.ts` → `packages/core/src/workflow/workflow.ts`
+  - [x] Update `packages/core/src/workflow/index.ts` to export workflow utilities
+  - [x] Update all imports across codebase
+  - [x] Remove workflow utilities from `packages/shared`
+  - [x] Update `packages/shared/src/utils/index.ts`
 
-- [ ] ⏳ **Remove duplicate code from `apps/explorer`**
-  - [ ] Remove `apps/explorer/src/lib/state-parser.ts` (use `@sst-toolkit/core`)
-  - [ ] Remove `apps/explorer/src/lib/relationship-parser.ts` (use `@sst-toolkit/core`)
-  - [ ] Remove `apps/explorer/src/lib/workflow-builder.ts` (use `@sst-toolkit/core`)
-  - [ ] Update `apps/explorer/src/App.tsx` imports
-  - [ ] Update `apps/explorer/src/components/workflow/WorkflowCanvas.tsx` imports
+- [x] ✅ **Remove duplicate code from `apps/explorer`**
+  - [x] Remove `apps/explorer/src/lib/state-parser.ts` (use `@sst-toolkit/core`)
+  - [x] Remove `apps/explorer/src/lib/relationship-parser.ts` (use `@sst-toolkit/core`)
+  - [x] Remove `apps/explorer/src/lib/workflow-builder.ts` (use `@sst-toolkit/core`)
+  - [x] Update `apps/explorer/src/App.tsx` imports
+  - [x] Update `apps/explorer/src/components/workflow/WorkflowCanvas.tsx` imports
 
-- [ ] ⏳ **Update all imports across codebase**
-  - [ ] Update `apps/explorer` imports
-  - [ ] Update `apps/cli` imports
-  - [ ] Update `packages/core` imports
-  - [ ] Update `packages/plugin-sdk` imports
-  - [ ] Verify no broken imports
+- [x] ✅ **Update all imports across codebase**
+  - [x] Update `apps/explorer` imports
+  - [x] Update `apps/cli` imports
+  - [x] Update `packages/core` imports
+  - [x] Update `packages/plugin-sdk` imports
+  - [x] Verify no broken imports
 
-- [ ] ⏳ **Update package.json dependencies**
-  - [ ] Remove `@sst-toolkit/shared` dependency from packages that now use `@sst-toolkit/core`
-  - [ ] Add `@sst-toolkit/core` dependency where needed
-  - [ ] Update `packages/shared/package.json` to remove moved utilities
-  - [ ] Update `packages/core/package.json` to include new utilities
+- [x] ✅ **Update package.json dependencies**
+  - [x] Remove `@sst-toolkit/shared` dependency from packages that now use `@sst-toolkit/core`
+  - [x] Add `@sst-toolkit/core` dependency where needed
+  - [x] Update `packages/shared/package.json` to remove moved utilities
+  - [x] Update `packages/core/package.json` to include new utilities
 
-- [ ] ⏳ **Update exports in `packages/core/src/index.ts`**
-  - [ ] Export state utilities: `export * as State from './state'`
-  - [ ] Export relationship utilities: `export * as Relationships from './relationships'`
-  - [ ] Export workflow utilities: `export * as Workflow from './workflow'`
+- [x] ✅ **Update exports in `packages/core/src/index.ts`**
+  - [x] Export state utilities: `export * as State from './state'`
+  - [x] Export relationship utilities: `export * as Relationships from './relationships'`
+  - [x] Export workflow utilities: `export * as Workflow from './workflow'`
 
-- [ ] ⏳ **Test and verify**
-  - [ ] Run `pnpm build` to verify no build errors
-  - [ ] Run `pnpm lint` to verify no linting errors
-  - [ ] Run `pnpm type-check` to verify no type errors
-  - [ ] Test explorer app still works
-  - [ ] Test CLI still works
+- [x] ✅ **Test and verify**
+  - [x] Run `pnpm build` to verify no build errors
+  - [x] Run `pnpm lint` to verify no linting errors
+  - [x] Run `pnpm type-check` to verify no type errors
+  - [x] Test explorer app still works
+  - [x] Test CLI still works
 
 ### Deliverables
 
@@ -563,12 +563,12 @@ This document tracks all tasks needed to implement the architecture improvements
 
 ## Progress Tracking
 
-**Last Updated**: 2024-01-XX
+**Last Updated**: 2024-12-XX
 
-**Overall Progress**: 0% (0/150+ tasks completed)
+**Overall Progress**: ~5% (8/150+ tasks completed)
 
 **Phase Progress**:
-- Phase 1: 0% (0/8 tasks)
+- Phase 1: 100% (8/8 tasks) ✅
 - Phase 2: 0% (0/8 tasks)
 - Phase 3: 0% (0/8 tasks)
 - Phase 4: 0% (0/8 tasks)
