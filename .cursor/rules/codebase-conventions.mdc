@@ -25,6 +25,12 @@ alwaysApply: true
 
 ## Code Quality
 
+### Error Handling
+- **Never run away from errors**: Always fix build errors, linting errors, and type errors
+- Do not ignore or suppress errors unless absolutely necessary
+- Fix errors at their source rather than working around them
+- Ensure all builds pass before committing
+
 ### ESLint
 - **Avoid** `eslint-disable` and `eslint-ignore` comments
 - Fix linting issues properly instead of suppressing them
