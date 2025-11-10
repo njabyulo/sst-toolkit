@@ -1,0 +1,33 @@
+{
+  "name": "@example/custom-component",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Example custom SST component using SST Toolkit",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sst-toolkit/plugin-sdk": "workspace:*"
+  },
+  "peerDependencies": {
+    "sst": "^3.0.0"
+  },
+  "devDependencies": {
+    "tsup": "catalog:",
+    "typescript": "catalog:"
+  }
+}
+
