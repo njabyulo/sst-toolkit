@@ -19,6 +19,7 @@
     "@radix-ui/react-slot": "catalog:",
     "@radix-ui/react-tabs": "catalog:",
     "@radix-ui/react-tooltip": "catalog:",
+    "@sst-toolkit/core": "workspace:*",
     "@sst-toolkit/shared": "workspace:*",
     "@xyflow/react": "catalog:",
     "class-variance-authority": "catalog:",

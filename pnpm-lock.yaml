@@ -152,6 +152,9 @@ importers:
 
   apps/cli:
     dependencies:
+      '@sst-toolkit/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@sst-toolkit/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -198,6 +201,9 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: 'catalog:'
         version: 1.2.8(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@sst-toolkit/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@sst-toolkit/shared':
         specifier: workspace:*
         version: link:../../packages/shared

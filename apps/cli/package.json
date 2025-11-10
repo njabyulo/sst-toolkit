@@ -15,6 +15,7 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
+    "@sst-toolkit/core": "workspace:*",
     "@sst-toolkit/shared": "workspace:*",
     "commander": "catalog:"
   },
