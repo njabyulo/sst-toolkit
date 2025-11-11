@@ -42,14 +42,14 @@
     "@sst-toolkit/plugin-sdk": "workspace:*"
   },
   "peerDependencies": {
-    "@pulumi/aws": "^6.0.0",
-    "@pulumi/pulumi": "^3.0.0",
-    "sst": "^3.0.0"
+    "@pulumi/aws": "catalog:",
+    "@pulumi/pulumi": "catalog:",
+    "sst": "catalog:"
   },
   "devDependencies": {
-    "@pulumi/pulumi": "^3.0.0",
+    "@pulumi/pulumi": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "sst": "^3.0.0",
+    "sst": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

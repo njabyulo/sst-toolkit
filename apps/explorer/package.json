@@ -58,7 +58,7 @@
     "eslint-plugin-react-hooks": "catalog:",
     "eslint-plugin-react-refresh": "catalog:",
     "globals": "catalog:",
-    "jsdom": "^24.1.3",
+    "jsdom": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "typescript-eslint": "catalog:",

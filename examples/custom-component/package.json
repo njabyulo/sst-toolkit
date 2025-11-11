@@ -23,7 +23,7 @@
     "@sst-toolkit/plugin-sdk": "workspace:*"
   },
   "peerDependencies": {
-    "sst": "^3.0.0"
+    "sst": "catalog:"
   },
   "devDependencies": {
     "tsup": "catalog:",

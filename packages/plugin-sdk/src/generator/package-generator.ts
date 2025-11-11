@@ -36,14 +36,14 @@ export function generatePackageJson(options: IPackageGeneratorOptions): string {
       "lint:fix": "eslint . --fix",
     },
     peerDependencies: {
-      sst: "^3.0.0",
+      sst: "catalog:",
     },
     devDependencies: {
-      "@pulumi/pulumi": "^3.0.0",
+      "@pulumi/pulumi": "catalog:",
       "@sst-toolkit/plugin-sdk": "workspace:*",
       "@sst-toolkit/core": "workspace:*",
       "@sst-toolkit/shared": "workspace:*",
-      "sst": "^3.0.0",
+      "sst": "catalog:",
       "tsup": "catalog:",
       "typescript": "catalog:",
       "eslint": "catalog:",
