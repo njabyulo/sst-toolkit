@@ -1,6 +1,14 @@
 # SST Toolkit
 
+<div align="center">
+
 > **A comprehensive toolkit for exploring, visualizing, and extending SST**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen)](https://nodejs.org/)
+[![pnpm Version](https://img.shields.io/badge/pnpm-%3E%3D10.0.0-orange)](https://pnpm.io/)
+
+</div>
 
 ## Overview
 
@@ -263,9 +271,22 @@ export class MyAPI extends Component.Component.SSTComponent {
 - [API Reference](./docs/API.md) - Complete API documentation
 - [Examples](./docs/examples/) - Real-world examples
 
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
+
+- [Code of Conduct](./CODE_OF_CONDUCT.md)
+- [Security Policy](./SECURITY.md)
+- [Changelog](./CHANGELOG.md)
+
 ## License
 
-MIT
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
+
+## Acknowledgments
+
+- Built for the [SST](https://sst.dev) community
+- Inspired by the need for better infrastructure visualization and extensibility
 
 
 

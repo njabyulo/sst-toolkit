@@ -1,75 +1,114 @@
-# React + TypeScript + Vite
+# SST Toolkit Explorer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A visual web application for exploring and analyzing SST (Serverless Stack) infrastructure state.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Visual State Explorer**: Browse your SST resources in an interactive interface
+- **Workflow Builder**: Visualize resource relationships and dependencies
+- **Resource Details**: Inspect individual resources with full metadata
+- **Search & Filter**: Quickly find resources by type, name, or properties
+- **Cost Estimation**: Get insights into your infrastructure costs
 
-## React Compiler
+## Getting Started
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+### Prerequisites
 
-Note: This will impact Vite dev & build performances.
+- Node.js >= 20.0.0
+- pnpm >= 10.0.0
 
-## Expanding the ESLint configuration
+### Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+```bash
+# From the repository root
+pnpm install
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Build dependencies
+pnpm build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+# Start the development server
+cd apps/explorer
+pnpm dev
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# The app will be available at http://localhost:5173
 ```
+
+### Building for Production
+
+```bash
+pnpm build
+pnpm preview
+```
+
+## Usage
+
+1. **Load State**: Import your SST state file (`.sst/state.json`) or use the sample data
+2. **Explore**: Navigate through resources using the sidebar
+3. **Visualize**: Switch to workflow view to see resource relationships
+4. **Inspect**: Click on resources to view detailed information
+
+## Features in Detail
+
+### State Explorer
+
+- Tree view of all resources
+- Resource type filtering
+- Search functionality
+- Resource status indicators
+
+### Workflow Builder
+
+- Visual node-based representation
+- Relationship visualization
+- Dependency tracking
+- Interactive canvas with zoom and pan
+
+### Resource Inspector
+
+- Full resource metadata
+- Output values
+- Dependencies and relationships
+- Link properties
+
+## Development
+
+### Project Structure
+
+```
+apps/explorer/
+├── src/
+│   ├── components/    # React components
+│   ├── lib/          # Utilities and helpers
+│   ├── types/        # TypeScript types
+│   └── App.tsx       # Main application
+├── public/           # Static assets
+└── tests/            # Test files
+```
+
+### Adding Features
+
+1. Create components in `src/components/`
+2. Add utilities in `src/lib/`
+3. Update types in `src/types/`
+4. Write tests in `tests/`
+
+## Technologies
+
+- **React 19**: UI framework
+- **TypeScript**: Type safety
+- **Vite**: Build tool and dev server
+- **React Flow**: Workflow visualization
+- **Tailwind CSS**: Styling
+- **Radix UI**: Accessible components
+
+## Contributing
+
+See the [main CONTRIBUTING.md](../../CONTRIBUTING.md) for guidelines on contributing to SST Toolkit.
+
+## License
+
+MIT
