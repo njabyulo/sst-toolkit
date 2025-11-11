@@ -37,15 +37,35 @@ pnpm build
 
 ### 1. Explore Your SST State
 
-```bash
-# Using the CLI
-pnpm sst-toolkit explore .sst/state.json
+#### Using the CLI
 
-# Using the Explorer web app
-cd apps/explorer
-pnpm dev
-# Open http://localhost:5173
+```bash
+# First, export your SST state (from your SST project directory)
+npx sst state export --stage dev > state.json
+
+# Then explore it
+pnpm sst-toolkit explore state.json
 ```
+
+#### Using the Explorer Web App
+
+1. **Export your SST state** from your SST project:
+   ```bash
+   # From your SST project directory
+   npx sst state export --stage dev > /path/to/sst-toolkit/apps/explorer/public/misc/state.json
+   
+   # Example:
+   npx sst state export --stage dev > ~/Documents/development/playground/oss/sst-toolkit/apps/explorer/public/misc/state.json
+   ```
+
+2. **Start the Explorer**:
+   ```bash
+   cd apps/explorer
+   pnpm dev
+   # Open http://localhost:5173
+   ```
+
+The Explorer will automatically load the state file from `public/misc/state.json`.
 
 ### 2. Create Your First Component
 

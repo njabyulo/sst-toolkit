@@ -110,10 +110,36 @@ pnpm dev
 
 ### Loading State
 
-The Explorer automatically loads state from `/public/misc/state.json`. To use your own state:
+The Explorer automatically loads state from `/public/misc/state.json`. To use your own SST state:
 
-1. Copy your state file to `apps/explorer/public/misc/state.json`
-2. Or modify the fetch URL in `apps/explorer/src/App.tsx`
+#### Export State from Your SST Project
+
+From your SST project directory, export the state for the stage you want to explore:
+
+```bash
+# Export state for a specific stage (e.g., dev, staging, prod)
+npx sst state export --stage dev > /path/to/sst-toolkit/apps/explorer/public/misc/state.json
+
+# Example with absolute path
+npx sst state export --stage dev > ~/Documents/development/playground/oss/sst-toolkit/apps/explorer/public/misc/state.json
+
+# Or use relative path from your SST project
+npx sst state export --stage dev > ../sst-toolkit/apps/explorer/public/misc/state.json
+```
+
+**Important Notes**:
+- Replace `/path/to/sst-toolkit` with the actual path to your sst-toolkit repository
+- Adjust the stage name (`dev`, `staging`, `prod`, etc.) to match your SST project stages
+- The state file will be saved to `apps/explorer/public/misc/state.json`
+- The Explorer will automatically load this file when you start the development server
+
+#### Alternative: Manual Copy
+
+If you prefer to copy the state file manually:
+
+1. Export state from your SST project: `npx sst state export --stage dev > state.json`
+2. Copy the file to `apps/explorer/public/misc/state.json`
+3. Start the Explorer development server
 
 ## Visualization
 
