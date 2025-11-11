@@ -104,6 +104,15 @@ import { IPlugin } from '@sst-toolkit/plugin-sdk';
 
 Visual SST state explorer with workflow builder.
 
+**Before using the Explorer**, export your SST state from your SST project:
+
+```bash
+# From your SST project directory
+npx sst state export --stage dev > /path/to/sst-toolkit/apps/explorer/public/misc/state.json
+```
+
+Then start the Explorer:
+
 ```bash
 cd apps/explorer
 pnpm dev
