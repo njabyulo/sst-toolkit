@@ -1,9 +1,12 @@
 import { useMemo, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "~/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, CartesianGrid } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Cell, CartesianGrid } from "recharts";
 import type { ISSTResource } from "@sst-toolkit/shared/types/sst";
 import * as State from "@sst-toolkit/core/state";
+import { ProviderDistributionChart } from "./stats/ProviderDistributionChart";
+import { CategoryBreakdownChart } from "./stats/CategoryBreakdownChart";
+import { StatsCard } from "./stats/StatsCard";
 
 interface IResourceStatsProps {
   resources: ISSTResource[];
@@ -14,32 +17,34 @@ interface IResourceStatsProps {
  * Color palette optimized for data visualization
  * Colorblind-friendly with good contrast
  */
+// Primary colors for sub-categories (colorblind-friendly)
+// Using Map for O(1) lookup instead of array.find() which is O(n)
+const SUB_CATEGORY_COLORS = new Map<string, string>([
+  ["Function", "hsl(220, 70%, 50%)"],      // Blue
+  ["API", "hsl(280, 65%, 55%)"],            // Purple
+  ["Storage", "hsl(200, 75%, 45%)"],        // Cyan
+  ["Database", "hsl(160, 60%, 45%)"],        // Teal
+  ["Queue", "hsl(30, 80%, 55%)"],            // Orange
+  ["Event Bus", "hsl(340, 70%, 55%)"],       // Pink
+  ["Notification", "hsl(15, 85%, 55%)"],      // Red-orange
+  ["Stream", "hsl(180, 70%, 45%)"],          // Aqua
+  ["Container", "hsl(260, 60%, 55%)"],        // Indigo
+  ["CDN", "hsl(40, 80%, 55%)"],             // Yellow-orange
+  ["DNS", "hsl(210, 70%, 50%)"],               // Sky blue
+  ["Certificate", "hsl(100, 50%, 45%)"],     // Green
+  ["IAM", "hsl(0, 70%, 50%)"],                // Red
+  ["Secret", "hsl(320, 60%, 50%)"],           // Magenta
+  ["Parameter", "hsl(140, 55%, 45%)"],        // Green-cyan
+  ["Monitoring", "hsl(25, 75%, 50%)"],         // Orange-red
+  ["Network", "hsl(240, 65%, 50%)"],           // Blue-purple
+  ["Cache", "hsl(50, 80%, 55%)"],             // Yellow
+  ["Auth", "hsl(300, 60%, 50%)"],            // Pink-purple
+  ["Link", "hsl(190, 60%, 45%)"],             // Blue-cyan
+  ["Pulumi", "hsl(270, 50%, 50%)"],          // Purple
+  ["Other", "hsl(0, 0%, 60%)"],                // Gray
+]);
+
 const COLOR_PALETTE = {
-  // Primary colors for sub-categories (colorblind-friendly)
-  subCategories: [
-    { name: "Function", color: "hsl(220, 70%, 50%)" },      // Blue
-    { name: "API", color: "hsl(280, 65%, 55%)" },            // Purple
-    { name: "Storage", color: "hsl(200, 75%, 45%)" },        // Cyan
-    { name: "Database", color: "hsl(160, 60%, 45%)" },        // Teal
-    { name: "Queue", color: "hsl(30, 80%, 55%)" },            // Orange
-    { name: "Event Bus", color: "hsl(340, 70%, 55%)" },       // Pink
-    { name: "Notification", color: "hsl(15, 85%, 55%)" },      // Red-orange
-    { name: "Stream", color: "hsl(180, 70%, 45%)" },          // Aqua
-    { name: "Container", color: "hsl(260, 60%, 55%)" },        // Indigo
-    { name: "CDN", color: "hsl(40, 80%, 55%)" },             // Yellow-orange
-    { name: "DNS", color: "hsl(210, 70%, 50%)" },               // Sky blue
-    { name: "Certificate", color: "hsl(100, 50%, 45%)" },     // Green
-    { name: "IAM", color: "hsl(0, 70%, 50%)" },                // Red
-    { name: "Secret", color: "hsl(320, 60%, 50%)" },           // Magenta
-    { name: "Parameter", color: "hsl(140, 55%, 45%)" },        // Green-cyan
-    { name: "Monitoring", color: "hsl(25, 75%, 50%)" },         // Orange-red
-    { name: "Network", color: "hsl(240, 65%, 50%)" },           // Blue-purple
-    { name: "Cache", color: "hsl(50, 80%, 55%)" },             // Yellow
-    { name: "Auth", color: "hsl(300, 60%, 50%)" },            // Pink-purple
-    { name: "Link", color: "hsl(190, 60%, 45%)" },             // Blue-cyan
-    { name: "Pulumi", color: "hsl(270, 50%, 50%)" },          // Purple
-    { name: "Other", color: "hsl(0, 0%, 60%)" },                // Gray
-  ],
   // Provider-specific color modifiers
   providers: {
     SST: { base: 0, saturation: 1.0, lightness: 1.0 },      // Full saturation for SST
@@ -73,17 +78,15 @@ function getCategoryColor(category: string, provider: string): string {
     categoryColorCache.set(category, subCategory);
   }
   
-  // Find matching sub-category color
-  const subCategoryColor = COLOR_PALETTE.subCategories.find(
-    (item) => item.name === subCategory
-  );
+  // Find matching sub-category color (O(1) lookup with Map)
+  const subCategoryColor = SUB_CATEGORY_COLORS.get(subCategory);
   
   if (subCategoryColor) {
     // Apply provider-specific modifications
     const providerMod = COLOR_PALETTE.providers[provider as keyof typeof COLOR_PALETTE.providers] || COLOR_PALETTE.providers.Other;
     
     // Parse HSL color
-    const hslMatch = subCategoryColor.color.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
+    const hslMatch = subCategoryColor.match(/hsl\((\d+),\s*(\d+)%,\s*(\d+)%\)/);
     if (hslMatch) {
       const [, h, s, l] = hslMatch;
       const hue = parseInt(h);
@@ -93,7 +96,7 @@ function getCategoryColor(category: string, provider: string): string {
       return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     }
     
-    return subCategoryColor.color;
+    return subCategoryColor;
   }
   
   // Fallback: generate color based on category hash
@@ -198,13 +201,16 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
       .sort((a, b) => b.count - a.count);
   }, [filteredPendingResources]);
 
-  // Calculate category statistics for deployed resources
+  // Calculate category statistics for deployed resources (optimized: single pass with provider tracking)
   const deployedCategoryStats = useMemo(() => {
     const categoryCounts = new Map<string, number>();
+    const categoryToProvider = new Map<string, Map<string, number>>(); // Track provider counts per category
+    const categoryToMostCommonProvider = new Map<string, { provider: string; count: number }>(); // Track most common provider per category
     const categoryCache = new Map<string, string>();
     
     filteredRegularResources.forEach((resource) => {
       const category = State.getResourceTypeCategory(resource.type, resource);
+      const provider = State.getResourceProvider(resource.type);
       
       // Extract sub-category (everything after " > ") - same as Explorer
       let subCategory: string;
@@ -218,19 +224,45 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
       }
       
       categoryCounts.set(subCategory, (categoryCounts.get(subCategory) || 0) + 1);
+      
+      // Track provider for this category (for color calculation)
+      if (!categoryToProvider.has(subCategory)) {
+        categoryToProvider.set(subCategory, new Map());
+      }
+      const providerMap = categoryToProvider.get(subCategory)!;
+      const newCount = (providerMap.get(provider) || 0) + 1;
+      providerMap.set(provider, newCount);
+      
+      // Track most common provider (O(1) update during pass)
+      const currentMostCommon = categoryToMostCommonProvider.get(subCategory);
+      if (!currentMostCommon || newCount > currentMostCommon.count) {
+        categoryToMostCommonProvider.set(subCategory, { provider, count: newCount });
+      }
     });
-    return Array.from(categoryCounts.entries())
+    
+    const stats = Array.from(categoryCounts.entries())
       .map(([category, count]) => ({ category, count }))
       .sort((a, b) => b.count - a.count);
+    
+    // Store provider mapping and most common provider for later use in color calculation
+    (stats as Array<{ category: string; count: number; providerMap?: Map<string, number>; mostCommonProvider?: string }>).forEach(stat => {
+      stat.providerMap = categoryToProvider.get(stat.category);
+      stat.mostCommonProvider = categoryToMostCommonProvider.get(stat.category)?.provider || "Other";
+    });
+    
+    return stats;
   }, [filteredRegularResources]);
 
-  // Calculate category statistics for pending resources
+  // Calculate category statistics for pending resources (optimized: single pass with provider tracking)
   const pendingCategoryStats = useMemo(() => {
     const categoryCounts = new Map<string, number>();
+    const categoryToProvider = new Map<string, Map<string, number>>(); // Track provider counts per category
+    const categoryToMostCommonProvider = new Map<string, { provider: string; count: number }>(); // Track most common provider per category
     const categoryCache = new Map<string, string>();
     
     filteredPendingResources.forEach((resource) => {
       const category = State.getResourceTypeCategory(resource.type, resource);
+      const provider = State.getResourceProvider(resource.type);
       
       // Extract sub-category (everything after " > ") - same as Explorer
       let subCategory: string;
@@ -244,10 +276,33 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
       }
       
       categoryCounts.set(subCategory, (categoryCounts.get(subCategory) || 0) + 1);
+      
+      // Track provider for this category (for color calculation)
+      if (!categoryToProvider.has(subCategory)) {
+        categoryToProvider.set(subCategory, new Map());
+      }
+      const providerMap = categoryToProvider.get(subCategory)!;
+      const newCount = (providerMap.get(provider) || 0) + 1;
+      providerMap.set(provider, newCount);
+      
+      // Track most common provider (O(1) update during pass)
+      const currentMostCommon = categoryToMostCommonProvider.get(subCategory);
+      if (!currentMostCommon || newCount > currentMostCommon.count) {
+        categoryToMostCommonProvider.set(subCategory, { provider, count: newCount });
+      }
     });
-    return Array.from(categoryCounts.entries())
+    
+    const stats = Array.from(categoryCounts.entries())
       .map(([category, count]) => ({ category, count }))
       .sort((a, b) => b.count - a.count);
+    
+    // Store provider mapping and most common provider for later use in color calculation
+    (stats as Array<{ category: string; count: number; providerMap?: Map<string, number>; mostCommonProvider?: string }>).forEach(stat => {
+      stat.providerMap = categoryToProvider.get(stat.category);
+      stat.mostCommonProvider = categoryToMostCommonProvider.get(stat.category)?.provider || "Other";
+    });
+    
+    return stats;
   }, [filteredPendingResources]);
 
   // Note: We're removing the combined categoryStats - showing deployed and pending separately
@@ -339,47 +394,25 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
   }, [filteredPendingResources]);
 
 
-  // Generate colors for deployed categories
+  // Generate colors for deployed categories (optimized: use pre-computed most common provider)
   const deployedColors = useMemo(() => {
-    return deployedCategoryStats.map(({ category }) => {
-      const providerCounts = new Map<string, number>();
-      filteredRegularResources.forEach((resource) => {
-        const fullCategory = State.getResourceTypeCategory(resource.type, resource);
-        const subCat = fullCategory.includes(" > ") 
-          ? fullCategory.split(" > ")[1] 
-          : fullCategory;
-        if (subCat === category) {
-          const provider = State.getResourceProvider(resource.type);
-          providerCounts.set(provider, (providerCounts.get(provider) || 0) + 1);
-        }
-      });
-      const mostCommonProvider = Array.from(providerCounts.entries())
-        .sort((a, b) => b[1] - a[1])[0]?.[0] || "Other";
+    return deployedCategoryStats.map((stat) => {
+      const category = stat.category;
+      const mostCommonProvider = (stat as { mostCommonProvider?: string }).mostCommonProvider || "Other";
       const hierarchicalCategory = `${mostCommonProvider} > ${category}`;
       return getCategoryColor(hierarchicalCategory, mostCommonProvider);
     });
-  }, [deployedCategoryStats, filteredRegularResources]);
+  }, [deployedCategoryStats]);
 
-  // Generate colors for pending categories
+  // Generate colors for pending categories (optimized: use pre-computed most common provider)
   const pendingColors = useMemo(() => {
-    return pendingCategoryStats.map(({ category }) => {
-      const providerCounts = new Map<string, number>();
-      filteredPendingResources.forEach((resource) => {
-        const fullCategory = State.getResourceTypeCategory(resource.type, resource);
-        const subCat = fullCategory.includes(" > ") 
-          ? fullCategory.split(" > ")[1] 
-          : fullCategory;
-        if (subCat === category) {
-          const provider = State.getResourceProvider(resource.type);
-          providerCounts.set(provider, (providerCounts.get(provider) || 0) + 1);
-        }
-      });
-      const mostCommonProvider = Array.from(providerCounts.entries())
-        .sort((a, b) => b[1] - a[1])[0]?.[0] || "Other";
+    return pendingCategoryStats.map((stat) => {
+      const category = stat.category;
+      const mostCommonProvider = (stat as { mostCommonProvider?: string }).mostCommonProvider || "Other";
       const hierarchicalCategory = `${mostCommonProvider} > ${category}`;
       return getCategoryColor(hierarchicalCategory, mostCommonProvider);
     });
-  }, [pendingCategoryStats, filteredPendingResources]);
+  }, [pendingCategoryStats]);
 
   const deployedChartConfig = useMemo(() => {
     const config: Record<string, { label: string; color: string }> = {};
@@ -441,14 +474,6 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
     return `${value.toLocaleString()} (${percentage}%)`;
   };
 
-  const pieLabelFormatter = ({ percent, category }: { category: string; percent: number }) => {
-    if (percent < 0.05) return "";
-    const shortCategory = category.includes(" > ") 
-      ? category.split(" > ")[1] 
-      : category;
-    return `${shortCategory}: ${(percent * 100).toFixed(0)}%`;
-  };
-
   const deployedPieTooltipFormatter = (value: number) => {
     const percentage = regularResourcesCount > 0
       ? ((value / regularResourcesCount) * 100).toFixed(1)
@@ -467,55 +492,39 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
     <div className="space-y-6">
       {/* Summary Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Deployed Resources</CardDescription>
-            <CardTitle className="text-3xl">{regularResourcesCount.toLocaleString()}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xs text-muted-foreground">
-              Currently deployed
-            </div>
-          </CardContent>
-        </Card>
+        <StatsCard
+          title="Deployed Resources"
+          value={regularResourcesCount}
+          description="Currently deployed"
+        />
         {pendingResourcesCount > 0 && (
-          <Card className="border-yellow-500/20 bg-yellow-500/5">
-            <CardHeader className="pb-2">
-              <CardDescription>Pending Resources</CardDescription>
-              <CardTitle className="text-3xl">{pendingResourcesCount.toLocaleString()}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-xs text-yellow-600 dark:text-yellow-400">
-                Awaiting deployment
-              </div>
-            </CardContent>
-          </Card>
+          <StatsCard
+            title="Pending Resources"
+            value={pendingResourcesCount}
+            description="Awaiting deployment"
+            className="border-yellow-500/20 bg-yellow-500/5"
+          />
         )}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Total Resources</CardDescription>
-            <CardTitle className="text-3xl">{totalResources.toLocaleString()}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xs text-muted-foreground">
-              {pendingResourcesCount > 0
-                ? `${regularResourcesCount} deployed + ${pendingResourcesCount} pending`
-                : "All deployed"}
-            </div>
-          </CardContent>
-        </Card>
+        <StatsCard
+          title="Total Resources"
+          value={totalResources}
+          description={
+            pendingResourcesCount > 0
+              ? `${regularResourcesCount} deployed + ${pendingResourcesCount} pending`
+              : "All deployed"
+          }
+        />
         {deployedProviderStats.map(({ provider, count }) => (
-          <Card key={provider}>
-            <CardHeader className="pb-2">
-              <CardDescription>{provider} Resources (Deployed)</CardDescription>
-              <CardTitle className="text-3xl">{count.toLocaleString()}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-xs text-muted-foreground">
-                {regularResourcesCount > 0 ? ((count / regularResourcesCount) * 100).toFixed(1) : "0"}% of deployed
-              </div>
-            </CardContent>
-          </Card>
+          <StatsCard
+            key={provider}
+            title={`${provider} Resources (Deployed)`}
+            value={count}
+            description={
+              regularResourcesCount > 0
+                ? `${((count / regularResourcesCount) * 100).toFixed(1)}% of deployed`
+                : "0% of deployed"
+            }
+          />
         ))}
       </div>
 
@@ -528,114 +537,24 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
           </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Deployed Provider Distribution */}
-        <Card>
-          <CardHeader>
-                <CardTitle>Provider Distribution (Deployed)</CardTitle>
-                <CardDescription>Breakdown by provider for deployed resources</CardDescription>
-          </CardHeader>
-          <CardContent>
-                <ChartContainer config={deployedProviderChartConfig} className="h-[300px] w-full">
-              <PieChart>
-                <Pie
-                      data={deployedProviderStats}
-                  dataKey="count"
-                  nameKey="provider"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  innerRadius={30}
-                  label={({ percent, provider }) => 
-                    percent >= 0.05 ? `${provider}: ${(percent * 100).toFixed(0)}%` : ""
-                  }
-                  labelLine={false}
-                  className="text-xs font-medium"
-                >
-                      {deployedProviderStats.map(({ provider }, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLOR_PALETTE.providerColors[provider as keyof typeof COLOR_PALETTE.providerColors] || COLOR_PALETTE.providerColors.Other}
-                      stroke="hsl(var(--background))"
-                      strokeWidth={2}
-                    />
-                  ))}
-                </Pie>
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                          formatter={(value) => [deployedPieTooltipFormatter(value as number), ""]}
-                      labelFormatter={(label) => (
-                        <span className="font-semibold">{label}</span>
-                      )}
-                    />
-                  }
-                />
-                <ChartLegend
-                  content={
-                    <ChartLegendContent
-                      className="flex-wrap justify-center gap-4"
-                      nameKey="provider"
-                    />
-                  }
-                  verticalAlign="bottom"
-                />
-              </PieChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+            <ProviderDistributionChart
+              title="Provider Distribution (Deployed)"
+              description="Breakdown by provider for deployed resources"
+              data={deployedProviderStats}
+              config={deployedProviderChartConfig}
+              tooltipFormatter={deployedPieTooltipFormatter}
+              providerColors={COLOR_PALETTE.providerColors}
+            />
 
-            {/* Deployed Category Breakdown */}
-        <Card>
-          <CardHeader>
-                <CardTitle>Category Breakdown (Deployed)</CardTitle>
-                <CardDescription>Distribution by category for deployed resources</CardDescription>
-          </CardHeader>
-          <CardContent>
-                <ChartContainer config={deployedChartConfig} className="h-[300px] w-full">
-              <PieChart>
-                <Pie
-                      data={deployedCategoryStats}
-                  dataKey="count"
-                  nameKey="category"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  innerRadius={30}
-                  label={pieLabelFormatter}
-                  labelLine={false}
-                  className="text-xs font-medium"
-                >
-                      {deployedCategoryStats.map((_, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                          fill={deployedColors[index]}
-                      stroke="hsl(var(--background))"
-                      strokeWidth={2}
-                    />
-                  ))}
-                </Pie>
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                          formatter={(value, name) => [deployedPieTooltipFormatter(value as number), name]}
-                      labelFormatter={(label) => (
-                        <span className="font-semibold">{label}</span>
-                      )}
-                    />
-                  }
+                {/* Deployed Category Breakdown */}
+                <CategoryBreakdownChart
+                  title="Category Breakdown (Deployed)"
+                  description="Distribution by category for deployed resources"
+                  data={deployedCategoryStats}
+                  config={deployedChartConfig}
+                  colors={deployedColors}
+                  tooltipFormatter={deployedPieTooltipFormatter}
                 />
-                <ChartLegend
-                  content={
-                    <ChartLegendContent
-                      className="flex-wrap justify-center gap-4"
-                      nameKey="category"
-                    />
-                  }
-                  verticalAlign="bottom"
-                />
-              </PieChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
 
             {/* Deployed Provider Breakdown by Category */}
         <Card>
@@ -775,114 +694,26 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Pending Provider Distribution */}
-            <Card className="border-yellow-500/20 bg-yellow-500/5">
-              <CardHeader>
-                <CardTitle>Provider Distribution (Pending)</CardTitle>
-                <CardDescription>Breakdown by provider for pending resources</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer config={pendingProviderChartConfig} className="h-[300px] w-full">
-                  <PieChart>
-                    <Pie
-                      data={pendingProviderStats}
-                      dataKey="count"
-                      nameKey="provider"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      innerRadius={30}
-                      label={({ percent, provider }) => 
-                        percent >= 0.05 ? `${provider}: ${(percent * 100).toFixed(0)}%` : ""
-                      }
-                      labelLine={false}
-                      className="text-xs font-medium"
-                    >
-                      {pendingProviderStats.map(({ provider }, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLOR_PALETTE.providerColors[provider as keyof typeof COLOR_PALETTE.providerColors] || COLOR_PALETTE.providerColors.Other}
-                          stroke="hsl(var(--background))"
-                          strokeWidth={2}
-                        />
-                      ))}
-                    </Pie>
-                    <ChartTooltip
-                      content={
-                        <ChartTooltipContent
-                          formatter={(value) => [pendingPieTooltipFormatter(value as number), ""]}
-                          labelFormatter={(label) => (
-                            <span className="font-semibold">{label}</span>
-                          )}
-                        />
-                      }
-                    />
-                    <ChartLegend
-                      content={
-                        <ChartLegendContent
-                          className="flex-wrap justify-center gap-4"
-                          nameKey="provider"
-                        />
-                      }
-                      verticalAlign="bottom"
-                    />
-                  </PieChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
+            <ProviderDistributionChart
+              title="Provider Distribution (Pending)"
+              description="Breakdown by provider for pending resources"
+              data={pendingProviderStats}
+              config={pendingProviderChartConfig}
+              tooltipFormatter={pendingPieTooltipFormatter}
+              providerColors={COLOR_PALETTE.providerColors}
+              className="border-yellow-500/20 bg-yellow-500/5"
+            />
 
-            {/* Pending Category Breakdown */}
-            <Card className="border-yellow-500/20 bg-yellow-500/5">
-              <CardHeader>
-                <CardTitle>Category Breakdown (Pending)</CardTitle>
-                <CardDescription>Distribution by category for pending resources</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer config={pendingChartConfig} className="h-[300px] w-full">
-                  <PieChart>
-                    <Pie
-                      data={pendingCategoryStats}
-                      dataKey="count"
-                      nameKey="category"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      innerRadius={30}
-                      label={pieLabelFormatter}
-                      labelLine={false}
-                      className="text-xs font-medium"
-                    >
-                      {pendingCategoryStats.map((_, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={pendingColors[index]}
-                          stroke="hsl(var(--background))"
-                          strokeWidth={2}
-                        />
-                      ))}
-                    </Pie>
-                    <ChartTooltip
-                      content={
-                        <ChartTooltipContent
-                          formatter={(value, name) => [pendingPieTooltipFormatter(value as number), name]}
-                          labelFormatter={(label) => (
-                            <span className="font-semibold">{label}</span>
-                          )}
-                        />
-                      }
-                    />
-                    <ChartLegend
-                      content={
-                        <ChartLegendContent
-                          className="flex-wrap justify-center gap-4"
-                          nameKey="category"
-                        />
-                      }
-                      verticalAlign="bottom"
-                    />
-                  </PieChart>
-                </ChartContainer>
-              </CardContent>
-            </Card>
+                {/* Pending Category Breakdown */}
+                <CategoryBreakdownChart
+                  title="Category Breakdown (Pending)"
+                  description="Distribution by category for pending resources"
+                  data={pendingCategoryStats}
+                  config={pendingChartConfig}
+                  colors={pendingColors}
+                  tooltipFormatter={pendingPieTooltipFormatter}
+                  className="border-yellow-500/20 bg-yellow-500/5"
+                />
 
             {/* Pending Provider Breakdown by Category */}
             <Card className="border-yellow-500/20 bg-yellow-500/5">

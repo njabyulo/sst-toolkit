@@ -91,9 +91,14 @@ export function StateFileSelector({ onFileChange, currentFile }: IStateFileSelec
     loadCurrentFileInfo();
   }, [currentFile]);
 
+  // Create Map for O(1) lookup instead of array.find() which is O(n)
+  const filesMap = useMemo(() => {
+    return new Map(availableFiles.map((f) => [f.filename, f]));
+  }, [availableFiles]);
+
   const currentFileData = useMemo(() => {
-    return availableFiles.find((f) => f.filename === currentFile);
-  }, [availableFiles, currentFile]);
+    return filesMap.get(currentFile);
+  }, [filesMap, currentFile]);
 
   if (loading) {
     return null;

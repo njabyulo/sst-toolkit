@@ -39,6 +39,11 @@ export function GlobalSearch({
     return [...resources, ...pendingOperationsResources];
   }, [resources, pendingOperationsResources]);
 
+  // Create Set of pending operation URNs for O(1) lookup
+  const pendingUrnsSet = useMemo(() => {
+    return new Set(pendingOperationsResources.map((r) => r.urn));
+  }, [pendingOperationsResources]);
+
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) {
       return [];
@@ -108,9 +113,9 @@ export function GlobalSearch({
 
   const isPending = useCallback(
     (resource: ISSTResource) => {
-      return pendingOperationsResources.some((r) => r.urn === resource.urn);
+      return pendingUrnsSet.has(resource.urn);
     },
-    [pendingOperationsResources]
+    [pendingUrnsSet]
   );
 
   return (
