@@ -11,6 +11,11 @@ export interface ISSTResource {
   sourcePosition?: string;
 }
 
+export interface IPendingOperation {
+  resource: ISSTResource;
+  type: string;
+}
+
 export interface ISSTState {
   stack: string;
   latest: {
@@ -26,6 +31,7 @@ export interface ISSTState {
       };
     };
     resources: ISSTResource[];
+    pending_operations?: IPendingOperation[];
   };
 }
 

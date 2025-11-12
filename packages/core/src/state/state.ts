@@ -1,7 +1,7 @@
 import type { ISSTResource, IResourceNode, IResourceGroup } from "@sst-toolkit/shared/types/sst";
 
-export function parseState(state: { latest: { resources: ISSTResource[] } }): IResourceNode[] {
-  const resources = state.latest.resources;
+export function parseState(state: { latest: { resources?: ISSTResource[] } }): IResourceNode[] {
+  const resources = state.latest.resources || [];
   const resourceMap = new Map<string, ISSTResource>();
   const childrenMap = new Map<string | undefined, ISSTResource[]>();
 
