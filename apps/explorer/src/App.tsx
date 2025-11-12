@@ -5,6 +5,10 @@ import { ResourceDetail } from "~/components/ResourceDetail";
 import { ResourceStats } from "~/components/ResourceStats";
 import { CostDashboard } from "~/components/CostDashboard";
 import { WorkflowCanvas } from "~/components/workflow/WorkflowCanvas";
+import { PendingOperationsList } from "~/components/PendingOperationsList";
+import { StateFileSelector } from "~/components/StateFileSelector";
+import { ErrorBoundary } from "~/components/ErrorBoundary";
+import { GlobalSearch } from "~/components/GlobalSearch";
 import {
   PluginMarketplace,
   InstalledPlugins,
@@ -18,6 +22,8 @@ import * as Relationships from "@sst-toolkit/core/relationships";
 import * as Workflow from "@sst-toolkit/core/workflow";
 import type { ISSTState, ISSTResource } from "@sst-toolkit/shared/types/sst";
 import { Spinner } from "~/components/ui/spinner";
+import { AlertCircle } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 
 function App() {
   const [state, setState] = useState<ISSTState | null>(null);
@@ -25,24 +31,34 @@ function App() {
   const [nodes, setNodes] = useState<ReturnType<typeof State.parseState>>([]);
   const [plugins, setPlugins] = useState<IPluginMetadata[]>([]);
   const [selectedPlugin, setSelectedPlugin] = useState<IPluginMetadata | null>(null);
+  const [stateFile, setStateFile] = useState<string>("state.json");
+  const [loadingError, setLoadingError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadState() {
+      setIsLoading(true);
+      setLoadingError(null);
       try {
-        const response = await fetch("/misc/state.json");
+        const response = await fetch(`/misc/${stateFile}`);
         if (!response.ok) {
-          throw new Error(`Failed to load state: ${response.statusText}`);
+          throw new Error(`Failed to load state file: ${response.statusText}`);
         }
         const parsedState = (await response.json()) as ISSTState;
         setState(parsedState);
         const parsedNodes = State.parseState(parsedState);
         setNodes(parsedNodes);
+        setLoadingError(null);
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to load state file";
+        setLoadingError(errorMessage);
         console.error("Failed to parse state:", error);
+      } finally {
+        setIsLoading(false);
       }
     }
     loadState();
-  }, []);
+  }, [stateFile]);
 
   useEffect(() => {
     async function loadPlugins() {
@@ -63,8 +79,18 @@ function App() {
 
   // Memoize allResources - must be before conditional return
   const allResources = useMemo(() => {
-    return state?.latest.resources ?? [];
-  }, [state?.latest.resources]);
+    return state?.latest?.resources ?? [];
+  }, [state?.latest?.resources]);
+
+  // Memoize pendingOperations - must be before conditional return
+  const pendingOperations = useMemo(() => {
+    return state?.latest.pending_operations ?? [];
+  }, [state?.latest.pending_operations]);
+
+  // Extract resources from pending operations for stats
+  const pendingOperationsResources = useMemo(() => {
+    return pendingOperations.map((op) => op.resource);
+  }, [pendingOperations]);
 
   // Build workflow from resources
   const workflow = useMemo(() => {
@@ -75,7 +101,7 @@ function App() {
     return Workflow.buildWorkflow(allResources, relationships);
   }, [allResources]);
 
-  if (!state) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
@@ -86,21 +112,76 @@ function App() {
     );
   }
 
+  if (loadingError || !state) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <Card className="max-w-md w-full">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-destructive" />
+              <CardTitle>Failed to Load State</CardTitle>
+            </div>
+            <CardDescription>
+              Unable to load the state file. Please check that the file exists and is valid.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {loadingError && (
+              <div className="p-3 bg-muted rounded-md">
+                <p className="text-sm font-mono text-muted-foreground">{loadingError}</p>
+              </div>
+            )}
+            <div className="flex gap-2">
+              <StateFileSelector
+                currentFile={stateFile}
+                onFileChange={setStateFile}
+              />
+            </div>
+            <div className="text-xs text-muted-foreground space-y-1">
+              <p>Make sure you have exported your SST state:</p>
+              <code className="block p-2 bg-muted rounded text-xs">
+                npx sst state export --stage dev &gt; apps/explorer/public/misc/state.json
+              </code>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <main className="flex-1 overflow-auto p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
-          {/* Page Header */}
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold">SST State Visualizer</h1>
-            <p className="text-muted-foreground">
-              Stack: <span className="font-mono">{state.stack}</span>
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Version: {state.latest.manifest.version} • Last updated:{" "}
-              {new Date(state.latest.manifest.time).toLocaleString()}
-            </p>
-          </div>
+    <ErrorBoundary>
+      <div className="min-h-screen bg-background flex flex-col">
+        <main className="flex-1 overflow-auto p-6">
+          <div className="max-w-7xl mx-auto space-y-6">
+            {/* Page Header */}
+            <div className="space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-2 flex-1">
+                  <h1 className="text-3xl font-bold">SST State Visualizer</h1>
+                  <p className="text-muted-foreground">
+                    Stack: <span className="font-mono">{state.stack}</span>
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Version: {state.latest.manifest.version} • Last updated:{" "}
+                    {new Date(state.latest.manifest.time).toLocaleString()}
+                  </p>
+                </div>
+                <div className="w-64">
+                  <StateFileSelector
+                    currentFile={stateFile}
+                    onFileChange={setStateFile}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <GlobalSearch
+                  resources={allResources}
+                  pendingOperationsResources={pendingOperationsResources}
+                  onSelectResource={handleResourceSelect}
+                />
+              </div>
+            </div>
 
           {/* Tabs for different views */}
           <Tabs defaultValue="overview" className="space-y-4">
@@ -109,11 +190,17 @@ function App() {
               <TabsTrigger value="explorer">Explorer</TabsTrigger>
               <TabsTrigger value="workflow">Workflow</TabsTrigger>
               <TabsTrigger value="costs">Costs</TabsTrigger>
+              {pendingOperations.length > 0 && (
+                <TabsTrigger value="pending">Pending Operations</TabsTrigger>
+              )}
               <TabsTrigger value="plugins">Plugins</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
-              <ResourceStats resources={allResources} />
+              <ResourceStats
+                resources={allResources}
+                pendingOperationsResources={pendingOperationsResources}
+              />
             </TabsContent>
 
             <TabsContent value="explorer" className="space-y-6">
@@ -150,6 +237,23 @@ function App() {
             <TabsContent value="costs" className="space-y-6">
               <CostDashboard resources={allResources} />
             </TabsContent>
+
+            {pendingOperations.length > 0 && (
+              <TabsContent value="pending" className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 h-[calc(100vh-200px)]">
+                  <div className="overflow-hidden">
+                    <PendingOperationsList
+                      operations={pendingOperations}
+                      onSelectResource={handleResourceSelect}
+                      selectedUrn={selectedResource?.urn}
+                    />
+                  </div>
+                  <div className="sticky top-0 h-full overflow-hidden">
+                    <ResourceDetail resource={selectedResource} />
+                  </div>
+                </div>
+              </TabsContent>
+            )}
 
             <TabsContent value="plugins" className="space-y-6">
               <Tabs defaultValue="marketplace" className="space-y-4">
@@ -191,6 +295,7 @@ function App() {
         </div>
       </main>
     </div>
+    </ErrorBoundary>
   );
 }
 
