@@ -9,14 +9,6 @@ import { PendingOperationsList } from "~/components/PendingOperationsList";
 import { StateFileSelector } from "~/components/StateFileSelector";
 import { ErrorBoundary } from "~/components/ErrorBoundary";
 import { GlobalSearch } from "~/components/GlobalSearch";
-import {
-  PluginMarketplace,
-  InstalledPlugins,
-  PluginDependencies,
-  PluginManager,
-  PluginDetail,
-} from "~/components/plugin";
-import { loadInstalledPlugins, type IPluginMetadata } from "~/lib/plugin-loader";
 import * as State from "@sst-toolkit/core/state";
 import * as Relationships from "@sst-toolkit/core/relationships";
 import * as Workflow from "@sst-toolkit/core/workflow";
@@ -29,8 +21,6 @@ function App() {
   const [state, setState] = useState<ISSTState | null>(null);
   const [selectedResource, setSelectedResource] = useState<ISSTResource | null>(null);
   const [nodes, setNodes] = useState<ReturnType<typeof State.parseState>>([]);
-  const [plugins, setPlugins] = useState<IPluginMetadata[]>([]);
-  const [selectedPlugin, setSelectedPlugin] = useState<IPluginMetadata | null>(null);
   const [stateFile, setStateFile] = useState<string>("state.json");
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -60,17 +50,6 @@ function App() {
     loadState();
   }, [stateFile]);
 
-  useEffect(() => {
-    async function loadPlugins() {
-      try {
-        const installedPlugins = await loadInstalledPlugins();
-        setPlugins(installedPlugins);
-      } catch (error) {
-        console.error("Failed to load plugins:", error);
-      }
-    }
-    loadPlugins();
-  }, []);
 
   // Memoize callback to prevent unnecessary re-renders - must be before conditional return
   const handleResourceSelect = useCallback((resource: ISSTResource) => {
@@ -187,13 +166,12 @@ function App() {
           <Tabs defaultValue="overview" className="space-y-4">
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="explorer">Explorer</TabsTrigger>
+              <TabsTrigger value="explorer">Ready</TabsTrigger>
+              {pendingOperations.length > 0 && (
+                <TabsTrigger value="pending">Pending</TabsTrigger>
+              )}
               <TabsTrigger value="workflow">Workflow</TabsTrigger>
               <TabsTrigger value="costs">Costs</TabsTrigger>
-              {pendingOperations.length > 0 && (
-                <TabsTrigger value="pending">Pending Operations</TabsTrigger>
-              )}
-              <TabsTrigger value="plugins">Plugins</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
@@ -255,42 +233,6 @@ function App() {
               </TabsContent>
             )}
 
-            <TabsContent value="plugins" className="space-y-6">
-              <Tabs defaultValue="marketplace" className="space-y-4">
-                <TabsList>
-                  <TabsTrigger value="marketplace">Marketplace</TabsTrigger>
-                  <TabsTrigger value="installed">Installed</TabsTrigger>
-                  <TabsTrigger value="dependencies">Dependencies</TabsTrigger>
-                  <TabsTrigger value="manager">Manager</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="marketplace" className="space-y-6">
-                  {selectedPlugin ? (
-                    <PluginDetail
-                      plugin={selectedPlugin}
-                      onClose={() => setSelectedPlugin(null)}
-                    />
-                  ) : (
-                    <PluginMarketplace
-                      plugins={[]}
-                      onView={(plugin) => setSelectedPlugin(plugin)}
-                    />
-                  )}
-                </TabsContent>
-
-                <TabsContent value="installed" className="space-y-6">
-                  <InstalledPlugins plugins={plugins} />
-                </TabsContent>
-
-                <TabsContent value="dependencies" className="space-y-6">
-                  <PluginDependencies plugins={plugins} />
-                </TabsContent>
-
-                <TabsContent value="manager" className="space-y-6">
-                  <PluginManager plugins={plugins} />
-                </TabsContent>
-              </Tabs>
-            </TabsContent>
           </Tabs>
         </div>
       </main>
