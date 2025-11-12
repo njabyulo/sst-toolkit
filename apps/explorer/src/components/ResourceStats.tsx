@@ -198,18 +198,6 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
       .sort((a, b) => b.count - a.count);
   }, [filteredPendingResources]);
 
-  // Calculate provider statistics for total (combined)
-  const providerStats = useMemo(() => {
-    const counts = new Map<string, number>();
-    filteredResources.forEach((resource) => {
-      const provider = State.getResourceProvider(resource.type);
-      counts.set(provider, (counts.get(provider) || 0) + 1);
-    });
-    return Array.from(counts.entries())
-      .map(([provider, count]) => ({ provider, count }))
-      .sort((a, b) => b.count - a.count);
-  }, [filteredResources]);
-
   // Calculate category statistics for deployed resources
   const deployedCategoryStats = useMemo(() => {
     const categoryCounts = new Map<string, number>();
@@ -262,42 +250,16 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
       .sort((a, b) => b.count - a.count);
   }, [filteredPendingResources]);
 
-  // Calculate category statistics for total (combined)
-  const categoryStats = useMemo(() => {
-    const categoryCounts = new Map<string, number>();
-    const categoryCache = new Map<string, string>();
-    
-    filteredResources.forEach((resource) => {
-      const category = State.getResourceTypeCategory(resource.type, resource);
-      
-      // Extract sub-category (everything after " > ") - same as Explorer
-      let subCategory: string;
-      if (categoryCache.has(category)) {
-        subCategory = categoryCache.get(category)!;
-      } else {
-        subCategory = category.includes(" > ") 
-          ? category.split(" > ")[1] 
-          : category;
-        categoryCache.set(category, subCategory);
-      }
-      
-      categoryCounts.set(subCategory, (categoryCounts.get(subCategory) || 0) + 1);
-    });
-    return Array.from(categoryCounts.entries())
-      .map(([category, count]) => ({ category, count }))
-      .sort((a, b) => b.count - a.count);
-  }, [filteredResources]);
+  // Note: We're removing the combined categoryStats - showing deployed and pending separately
 
-  // Calculate sub-category statistics with provider breakdown
-  const subCategoryStats = useMemo(() => {
+  // Calculate sub-category statistics with provider breakdown for deployed resources
+  const deployedSubCategoryStats = useMemo(() => {
     const subCategoryMap = new Map<string, { SST: number; AWS: number; Other: number }>();
-    // Cache for category extraction to avoid repeated string operations
     const categoryCache = new Map<string, string>();
     
-    filteredResources.forEach((resource) => {
+    filteredRegularResources.forEach((resource) => {
       const provider = State.getResourceProvider(resource.type);
       const category = State.getResourceTypeCategory(resource.type, resource);
-      // Use cached extraction for better performance
       let subCategory: string;
       if (categoryCache.has(category)) {
         subCategory = categoryCache.get(category)!;
@@ -324,8 +286,45 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
       }))
       .filter((item) => item.total > 0)
       .sort((a, b) => b.total - a.total)
-      .slice(0, 15); // Top 15 sub-categories
-  }, [filteredResources]);
+      .slice(0, 15);
+  }, [filteredRegularResources]);
+
+  // Calculate sub-category statistics with provider breakdown for pending resources
+  const pendingSubCategoryStats = useMemo(() => {
+    const subCategoryMap = new Map<string, { SST: number; AWS: number; Other: number }>();
+    const categoryCache = new Map<string, string>();
+    
+    filteredPendingResources.forEach((resource) => {
+      const provider = State.getResourceProvider(resource.type);
+      const category = State.getResourceTypeCategory(resource.type, resource);
+      let subCategory: string;
+      if (categoryCache.has(category)) {
+        subCategory = categoryCache.get(category)!;
+      } else {
+        subCategory = category.includes(" > ") 
+          ? category.split(" > ")[1] 
+          : category;
+        categoryCache.set(category, subCategory);
+      }
+      
+      if (!subCategoryMap.has(subCategory)) {
+        subCategoryMap.set(subCategory, { SST: 0, AWS: 0, Other: 0 });
+      }
+      
+      const stats = subCategoryMap.get(subCategory)!;
+      stats[provider as keyof typeof stats]++;
+    });
+    
+    return Array.from(subCategoryMap.entries())
+      .map(([subCategory, counts]) => ({
+        subCategory,
+        ...counts,
+        total: counts.SST + counts.AWS + counts.Other,
+      }))
+      .filter((item) => item.total > 0)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 15);
+  }, [filteredPendingResources]);
 
   const totalResources = useMemo(() => {
     return filteredResources.length;
@@ -340,13 +339,11 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
   }, [filteredPendingResources]);
 
 
-  // Generate colors for each category (using sub-category from Explorer structure)
-  const colors = useMemo(() => {
-    return categoryStats.map(({ category }) => {
-      // For Explorer structure, we use sub-category directly, so we need to find a representative provider
-      // We'll use the most common provider for this sub-category
+  // Generate colors for deployed categories
+  const deployedColors = useMemo(() => {
+    return deployedCategoryStats.map(({ category }) => {
       const providerCounts = new Map<string, number>();
-      filteredResources.forEach((resource) => {
+      filteredRegularResources.forEach((resource) => {
         const fullCategory = State.getResourceTypeCategory(resource.type, resource);
         const subCat = fullCategory.includes(" > ") 
           ? fullCategory.split(" > ")[1] 
@@ -358,56 +355,111 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
       });
       const mostCommonProvider = Array.from(providerCounts.entries())
         .sort((a, b) => b[1] - a[1])[0]?.[0] || "Other";
-      
-      // Create a hierarchical category for color calculation
       const hierarchicalCategory = `${mostCommonProvider} > ${category}`;
       return getCategoryColor(hierarchicalCategory, mostCommonProvider);
     });
-  }, [categoryStats, filteredResources]);
+  }, [deployedCategoryStats, filteredRegularResources]);
 
-  const chartConfig = useMemo(() => {
+  // Generate colors for pending categories
+  const pendingColors = useMemo(() => {
+    return pendingCategoryStats.map(({ category }) => {
+      const providerCounts = new Map<string, number>();
+      filteredPendingResources.forEach((resource) => {
+        const fullCategory = State.getResourceTypeCategory(resource.type, resource);
+        const subCat = fullCategory.includes(" > ") 
+          ? fullCategory.split(" > ")[1] 
+          : fullCategory;
+        if (subCat === category) {
+          const provider = State.getResourceProvider(resource.type);
+          providerCounts.set(provider, (providerCounts.get(provider) || 0) + 1);
+        }
+      });
+      const mostCommonProvider = Array.from(providerCounts.entries())
+        .sort((a, b) => b[1] - a[1])[0]?.[0] || "Other";
+      const hierarchicalCategory = `${mostCommonProvider} > ${category}`;
+      return getCategoryColor(hierarchicalCategory, mostCommonProvider);
+    });
+  }, [pendingCategoryStats, filteredPendingResources]);
+
+  const deployedChartConfig = useMemo(() => {
     const config: Record<string, { label: string; color: string }> = {};
-    categoryStats.forEach(({ category }, index) => {
+    deployedCategoryStats.forEach(({ category }, index) => {
       config[category] = {
         label: category,
-        color: colors[index],
+        color: deployedColors[index],
       };
     });
     return config;
-  }, [categoryStats, colors]);
+  }, [deployedCategoryStats, deployedColors]);
 
-  // Provider chart config
-  const providerChartConfig = useMemo(() => {
+  const pendingChartConfig = useMemo(() => {
     const config: Record<string, { label: string; color: string }> = {};
-    providerStats.forEach(({ provider }) => {
+    pendingCategoryStats.forEach(({ category }, index) => {
+      config[category] = {
+        label: category,
+        color: pendingColors[index],
+      };
+    });
+    return config;
+  }, [pendingCategoryStats, pendingColors]);
+
+  // Provider chart configs
+  const deployedProviderChartConfig = useMemo(() => {
+    const config: Record<string, { label: string; color: string }> = {};
+    deployedProviderStats.forEach(({ provider }) => {
       config[provider] = {
         label: provider,
         color: COLOR_PALETTE.providerColors[provider as keyof typeof COLOR_PALETTE.providerColors] || COLOR_PALETTE.providerColors.Other,
       };
     });
     return config;
-  }, [providerStats]);
+  }, [deployedProviderStats]);
 
-  // Custom tooltip formatter for bar chart
-  const barTooltipFormatter = (value: number) => {
-    const percentage = ((value / totalResources) * 100).toFixed(1);
+  const pendingProviderChartConfig = useMemo(() => {
+    const config: Record<string, { label: string; color: string }> = {};
+    pendingProviderStats.forEach(({ provider }) => {
+      config[provider] = {
+        label: provider,
+        color: COLOR_PALETTE.providerColors[provider as keyof typeof COLOR_PALETTE.providerColors] || COLOR_PALETTE.providerColors.Other,
+      };
+    });
+    return config;
+  }, [pendingProviderStats]);
+
+  // Custom tooltip formatters
+  const deployedBarTooltipFormatter = (value: number) => {
+    const percentage = regularResourcesCount > 0 
+      ? ((value / regularResourcesCount) * 100).toFixed(1)
+      : "0";
     return `${value.toLocaleString()} (${percentage}%)`;
   };
 
-  // Custom label formatter for pie chart (only show if slice is large enough)
+  const pendingBarTooltipFormatter = (value: number) => {
+    const percentage = pendingResourcesCount > 0 
+      ? ((value / pendingResourcesCount) * 100).toFixed(1)
+      : "0";
+    return `${value.toLocaleString()} (${percentage}%)`;
+  };
+
   const pieLabelFormatter = ({ percent, category }: { category: string; percent: number }) => {
-    // Only show label if slice is >= 5%
     if (percent < 0.05) return "";
-    // Show shortened category name for better readability
     const shortCategory = category.includes(" > ") 
       ? category.split(" > ")[1] 
       : category;
     return `${shortCategory}: ${(percent * 100).toFixed(0)}%`;
   };
 
-  // Custom tooltip formatter for pie chart
-  const pieTooltipFormatter = (value: number) => {
-    const percentage = ((value / totalResources) * 100).toFixed(1);
+  const deployedPieTooltipFormatter = (value: number) => {
+    const percentage = regularResourcesCount > 0
+      ? ((value / regularResourcesCount) * 100).toFixed(1)
+      : "0";
+    return `${value.toLocaleString()} (${percentage}%)`;
+  };
+
+  const pendingPieTooltipFormatter = (value: number) => {
+    const percentage = pendingResourcesCount > 0
+      ? ((value / pendingResourcesCount) * 100).toFixed(1)
+      : "0";
     return `${value.toLocaleString()} (${percentage}%)`;
   };
 
@@ -452,38 +504,40 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
             </div>
           </CardContent>
         </Card>
-        {providerStats.map(({ provider, count }) => (
+        {deployedProviderStats.map(({ provider, count }) => (
           <Card key={provider}>
             <CardHeader className="pb-2">
-              <CardDescription>{provider} Resources</CardDescription>
+              <CardDescription>{provider} Resources (Deployed)</CardDescription>
               <CardTitle className="text-3xl">{count.toLocaleString()}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-xs text-muted-foreground">
-                {((count / totalResources) * 100).toFixed(1)}% of total
+                {regularResourcesCount > 0 ? ((count / regularResourcesCount) * 100).toFixed(1) : "0"}% of deployed
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Charts Grid */}
+      {/* Deployed Resources Charts Section */}
+      {regularResourcesCount > 0 && (
+        <div className="space-y-6">
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold">Deployed Resources</h2>
+            <span className="text-sm text-muted-foreground">({regularResourcesCount.toLocaleString()} resources)</span>
+          </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Provider Distribution Pie Chart */}
+            {/* Deployed Provider Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle>Provider Distribution</CardTitle>
-            <CardDescription>
-              {pendingResourcesCount > 0
-                ? `Total breakdown by provider (${regularResourcesCount} deployed + ${pendingResourcesCount} pending)`
-                : "Breakdown by provider (SST vs AWS)"}
-            </CardDescription>
+                <CardTitle>Provider Distribution (Deployed)</CardTitle>
+                <CardDescription>Breakdown by provider for deployed resources</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={providerChartConfig} className="h-[300px] w-full">
+                <ChartContainer config={deployedProviderChartConfig} className="h-[300px] w-full">
               <PieChart>
                 <Pie
-                  data={providerStats}
+                      data={deployedProviderStats}
                   dataKey="count"
                   nameKey="provider"
                   cx="50%"
@@ -496,7 +550,7 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
                   labelLine={false}
                   className="text-xs font-medium"
                 >
-                  {providerStats.map(({ provider }, index) => (
+                      {deployedProviderStats.map(({ provider }, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={COLOR_PALETTE.providerColors[provider as keyof typeof COLOR_PALETTE.providerColors] || COLOR_PALETTE.providerColors.Other}
@@ -508,7 +562,7 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
                 <ChartTooltip
                   content={
                     <ChartTooltipContent
-                      formatter={(value) => [pieTooltipFormatter(value as number), ""]}
+                          formatter={(value) => [deployedPieTooltipFormatter(value as number), ""]}
                       labelFormatter={(label) => (
                         <span className="font-semibold">{label}</span>
                       )}
@@ -529,21 +583,17 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
           </CardContent>
         </Card>
 
-        {/* Category Breakdown Pie Chart */}
+            {/* Deployed Category Breakdown */}
         <Card>
           <CardHeader>
-            <CardTitle>Category Breakdown</CardTitle>
-            <CardDescription>
-              {pendingResourcesCount > 0
-                ? `Total distribution (${regularResourcesCount} deployed + ${pendingResourcesCount} pending)`
-                : "Percentage distribution of resources"}
-            </CardDescription>
+                <CardTitle>Category Breakdown (Deployed)</CardTitle>
+                <CardDescription>Distribution by category for deployed resources</CardDescription>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px] w-full">
+                <ChartContainer config={deployedChartConfig} className="h-[300px] w-full">
               <PieChart>
                 <Pie
-                  data={categoryStats}
+                      data={deployedCategoryStats}
                   dataKey="count"
                   nameKey="category"
                   cx="50%"
@@ -554,10 +604,10 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
                   labelLine={false}
                   className="text-xs font-medium"
                 >
-                  {categoryStats.map((_, index) => (
+                      {deployedCategoryStats.map((_, index) => (
                     <Cell
                       key={`cell-${index}`}
-                      fill={colors[index]}
+                          fill={deployedColors[index]}
                       stroke="hsl(var(--background))"
                       strokeWidth={2}
                     />
@@ -566,7 +616,7 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
                 <ChartTooltip
                   content={
                     <ChartTooltipContent
-                      formatter={(value, name) => [pieTooltipFormatter(value as number), name]}
+                          formatter={(value, name) => [deployedPieTooltipFormatter(value as number), name]}
                       labelFormatter={(label) => (
                         <span className="font-semibold">{label}</span>
                       )}
@@ -587,216 +637,381 @@ export function ResourceStats({ resources, pendingOperationsResources = [] }: IR
           </CardContent>
         </Card>
 
-        {/* Stacked Bar Chart - Provider Breakdown by Sub-Category */}
+            {/* Deployed Provider Breakdown by Category */}
         <Card>
           <CardHeader>
-            <CardTitle>Provider Breakdown by Category</CardTitle>
-            <CardDescription>
-              {pendingResourcesCount > 0
-                ? `SST vs AWS distribution (includes ${pendingResourcesCount} pending)`
-                : "SST vs AWS distribution within each sub-category"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={providerChartConfig} className="h-[350px] w-full">
-              <BarChart
-                data={subCategoryStats}
-                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-                layout="vertical"
-              >
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis
-                  type="number"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  className="text-xs"
-                  tickFormatter={(value) => value.toLocaleString()}
-                />
-                <YAxis
-                  type="category"
-                  dataKey="subCategory"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  width={100}
-                  className="text-xs"
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      formatter={(value) => [value?.toLocaleString() || "0", ""]}
-                      labelFormatter={(label) => (
-                        <span className="font-semibold">{label}</span>
-                      )}
+                <CardTitle>Provider Breakdown by Category (Deployed)</CardTitle>
+                <CardDescription>SST vs AWS distribution within each category</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={deployedProviderChartConfig} className="h-[350px] w-full">
+                  <BarChart
+                    data={deployedSubCategoryStats}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                    layout="vertical"
+                  >
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis
+                      type="number"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      className="text-xs"
+                      tickFormatter={(value) => value.toLocaleString()}
                     />
-                  }
-                />
-                <ChartLegend
-                  content={
-                    <ChartLegendContent
-                      className="flex-wrap justify-center gap-4"
+                    <YAxis
+                      type="category"
+                      dataKey="subCategory"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      width={100}
+                      className="text-xs"
                     />
-                  }
-                />
-                <Bar
-                  dataKey="SST"
-                  stackId="provider"
-                  fill={COLOR_PALETTE.providerColors.SST}
-                  radius={[0, 0, 0, 0]}
-                />
-                <Bar
-                  dataKey="AWS"
-                  stackId="provider"
-                  fill={COLOR_PALETTE.providerColors.AWS}
-                  radius={[0, 0, 0, 0]}
-                />
-                <Bar
-                  dataKey="Other"
-                  stackId="provider"
-                  fill={COLOR_PALETTE.providerColors.Other}
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          formatter={(value) => [value?.toLocaleString() || "0", ""]}
+                          labelFormatter={(label) => (
+                            <span className="font-semibold">{label}</span>
+                          )}
+                        />
+                      }
+                    />
+                    <ChartLegend
+                      content={
+                        <ChartLegendContent
+                          className="flex-wrap justify-center gap-4"
+                        />
+                      }
+                    />
+                    <Bar
+                      dataKey="SST"
+                      stackId="provider"
+                      fill={COLOR_PALETTE.providerColors.SST}
+                      radius={[0, 0, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="AWS"
+                      stackId="provider"
+                      fill={COLOR_PALETTE.providerColors.AWS}
+                      radius={[0, 0, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="Other"
+                      stackId="provider"
+                      fill={COLOR_PALETTE.providerColors.Other}
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
 
-        {/* Grouped Bar Chart - Provider Comparison */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Provider Comparison</CardTitle>
-            <CardDescription>
-              {pendingResourcesCount > 0
-                ? `SST vs AWS comparison (includes ${pendingResourcesCount} pending)`
-                : "Side-by-side comparison of SST vs AWS by category"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={providerChartConfig} className="h-[350px] w-full">
-              <BarChart
-                data={subCategoryStats}
-                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis
-                  dataKey="subCategory"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  className="text-xs"
-                  interval={0}
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  className="text-xs"
-                  tickFormatter={(value) => value.toLocaleString()}
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      formatter={(value) => [value?.toLocaleString() || "0", ""]}
-                      labelFormatter={(label) => (
-                        <span className="font-semibold">{label}</span>
-                      )}
+            {/* Deployed Resource Distribution */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Resource Distribution (Deployed)</CardTitle>
+                <CardDescription>{regularResourcesCount.toLocaleString()} deployed resources by category</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={deployedChartConfig} className="h-[350px] w-full">
+                  <BarChart
+                    data={deployedCategoryStats}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis
+                      dataKey="category"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                      className="text-xs"
+                      interval={0}
                     />
-                  }
-                />
-                <ChartLegend
-                  content={
-                    <ChartLegendContent
-                      className="flex-wrap justify-center gap-4"
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      className="text-xs"
+                      tickFormatter={(value) => value.toLocaleString()}
                     />
-                  }
-                />
-                <Bar
-                  dataKey="SST"
-                  fill={COLOR_PALETTE.providerColors.SST}
-                  radius={[8, 8, 0, 0]}
-                />
-                <Bar
-                  dataKey="AWS"
-                  fill={COLOR_PALETTE.providerColors.AWS}
-                  radius={[8, 8, 0, 0]}
-                />
-                <Bar
-                  dataKey="Other"
-                  fill={COLOR_PALETTE.providerColors.Other}
-                  radius={[8, 8, 0, 0]}
-                />
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          formatter={(value, name) => [deployedBarTooltipFormatter(value as number), name]}
+                          labelFormatter={(label) => (
+                            <span className="font-semibold">{label}</span>
+                          )}
+                        />
+                      }
+                    />
+                    <Bar
+                      dataKey="count"
+                      radius={[8, 8, 0, 0]}
+                      className="fill-primary"
+                    >
+                      {deployedCategoryStats.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={deployedColors[index]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
 
-        {/* Resource Distribution Bar Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Resource Distribution</CardTitle>
-            <CardDescription>
-              {pendingResourcesCount > 0
-                ? `${totalResources.toLocaleString()} total resources (${regularResourcesCount} deployed + ${pendingResourcesCount} pending)`
-                : `${totalResources.toLocaleString()} total resources by category`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-[350px] w-full">
-              <BarChart
-                data={categoryStats}
-                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis
-                  dataKey="category"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  className="text-xs"
-                  interval={0}
-                  tickFormatter={(value) => {
-                    // Category is already sub-category from Explorer structure
-                    return value;
-                  }}
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  className="text-xs"
-                  tickFormatter={(value) => value.toLocaleString()}
-                />
-                <ChartTooltip
-                  content={
-                    <ChartTooltipContent
-                      formatter={(value, name) => [barTooltipFormatter(value as number), name]}
-                      labelFormatter={(label) => (
-                        <span className="font-semibold">{label}</span>
-                      )}
+      {/* Pending Resources Charts Section */}
+      {pendingResourcesCount > 0 && (
+        <div className="space-y-6">
+          <div className="flex items-center gap-2">
+            <h2 className="text-2xl font-bold">Pending Resources</h2>
+            <span className="text-sm text-yellow-600 dark:text-yellow-400">({pendingResourcesCount.toLocaleString()} resources)</span>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Pending Provider Distribution */}
+            <Card className="border-yellow-500/20 bg-yellow-500/5">
+              <CardHeader>
+                <CardTitle>Provider Distribution (Pending)</CardTitle>
+                <CardDescription>Breakdown by provider for pending resources</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={pendingProviderChartConfig} className="h-[300px] w-full">
+                  <PieChart>
+                    <Pie
+                      data={pendingProviderStats}
+                      dataKey="count"
+                      nameKey="provider"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      innerRadius={30}
+                      label={({ percent, provider }) => 
+                        percent >= 0.05 ? `${provider}: ${(percent * 100).toFixed(0)}%` : ""
+                      }
+                      labelLine={false}
+                      className="text-xs font-medium"
+                    >
+                      {pendingProviderStats.map(({ provider }, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLOR_PALETTE.providerColors[provider as keyof typeof COLOR_PALETTE.providerColors] || COLOR_PALETTE.providerColors.Other}
+                          stroke="hsl(var(--background))"
+                          strokeWidth={2}
+                        />
+                      ))}
+                    </Pie>
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          formatter={(value) => [pendingPieTooltipFormatter(value as number), ""]}
+                          labelFormatter={(label) => (
+                            <span className="font-semibold">{label}</span>
+                          )}
+                        />
+                      }
                     />
-                  }
-                />
-                <Bar
-                  dataKey="count"
-                  radius={[8, 8, 0, 0]}
-                  className="fill-primary"
-                >
-                  {categoryStats.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={colors[index]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
+                    <ChartLegend
+                      content={
+                        <ChartLegendContent
+                          className="flex-wrap justify-center gap-4"
+                          nameKey="provider"
+                        />
+                      }
+                      verticalAlign="bottom"
+                    />
+                  </PieChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+            {/* Pending Category Breakdown */}
+            <Card className="border-yellow-500/20 bg-yellow-500/5">
+              <CardHeader>
+                <CardTitle>Category Breakdown (Pending)</CardTitle>
+                <CardDescription>Distribution by category for pending resources</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={pendingChartConfig} className="h-[300px] w-full">
+                  <PieChart>
+                    <Pie
+                      data={pendingCategoryStats}
+                      dataKey="count"
+                      nameKey="category"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      innerRadius={30}
+                      label={pieLabelFormatter}
+                      labelLine={false}
+                      className="text-xs font-medium"
+                    >
+                      {pendingCategoryStats.map((_, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={pendingColors[index]}
+                          stroke="hsl(var(--background))"
+                          strokeWidth={2}
+                        />
+                      ))}
+                    </Pie>
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          formatter={(value, name) => [pendingPieTooltipFormatter(value as number), name]}
+                          labelFormatter={(label) => (
+                            <span className="font-semibold">{label}</span>
+                          )}
+                        />
+                      }
+                    />
+                    <ChartLegend
+                      content={
+                        <ChartLegendContent
+                          className="flex-wrap justify-center gap-4"
+                          nameKey="category"
+                        />
+                      }
+                      verticalAlign="bottom"
+                    />
+                  </PieChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+            {/* Pending Provider Breakdown by Category */}
+            <Card className="border-yellow-500/20 bg-yellow-500/5">
+              <CardHeader>
+                <CardTitle>Provider Breakdown by Category (Pending)</CardTitle>
+                <CardDescription>SST vs AWS distribution within each category</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={pendingProviderChartConfig} className="h-[350px] w-full">
+                  <BarChart
+                    data={pendingSubCategoryStats}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                    layout="vertical"
+                  >
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis
+                      type="number"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      className="text-xs"
+                      tickFormatter={(value) => value.toLocaleString()}
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="subCategory"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      width={100}
+                      className="text-xs"
+                    />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          formatter={(value) => [value?.toLocaleString() || "0", ""]}
+                          labelFormatter={(label) => (
+                            <span className="font-semibold">{label}</span>
+                          )}
+                        />
+                      }
+                    />
+                    <ChartLegend
+                      content={
+                        <ChartLegendContent
+                          className="flex-wrap justify-center gap-4"
+                        />
+                      }
+                    />
+                    <Bar
+                      dataKey="SST"
+                      stackId="provider"
+                      fill={COLOR_PALETTE.providerColors.SST}
+                      radius={[0, 0, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="AWS"
+                      stackId="provider"
+                      fill={COLOR_PALETTE.providerColors.AWS}
+                      radius={[0, 0, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="Other"
+                      stackId="provider"
+                      fill={COLOR_PALETTE.providerColors.Other}
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+            {/* Pending Resource Distribution */}
+            <Card className="border-yellow-500/20 bg-yellow-500/5">
+              <CardHeader>
+                <CardTitle>Resource Distribution (Pending)</CardTitle>
+                <CardDescription>{pendingResourcesCount.toLocaleString()} pending resources by category</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={pendingChartConfig} className="h-[350px] w-full">
+                  <BarChart
+                    data={pendingCategoryStats}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis
+                      dataKey="category"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                      className="text-xs"
+                      interval={0}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      className="text-xs"
+                      tickFormatter={(value) => value.toLocaleString()}
+                    />
+                    <ChartTooltip
+                      content={
+                        <ChartTooltipContent
+                          formatter={(value, name) => [pendingBarTooltipFormatter(value as number), name]}
+                          labelFormatter={(label) => (
+                            <span className="font-semibold">{label}</span>
+                          )}
+                        />
+                      }
+                    />
+                    <Bar
+                      dataKey="count"
+                      radius={[8, 8, 0, 0]}
+                      className="fill-primary"
+                    >
+                      {pendingCategoryStats.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={pendingColors[index]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
 
     </div>
   );
