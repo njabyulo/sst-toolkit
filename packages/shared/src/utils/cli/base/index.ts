@@ -11,20 +11,46 @@ import type { IResource, IFinderOptions } from "../../../types/cli/resources";
 
 /**
  * Create AWS client config with profile support
+ * Priority: Environment variables > Profile > Default credential chain
  */
 export function createClientConfig(options: IFinderOptions): {
   region: string;
   credentials?: () => Promise<{ accessKeyId: string; secretAccessKey: string; sessionToken?: string }>;
 } {
-  return {
-    region: options.region || "us-east-1",
-    ...(options.awsProfile && {
+  const region = options.region || "us-east-1";
+  
+  // Check if credentials are available via environment variables
+  const hasEnvCredentials = 
+    process.env.AWS_ACCESS_KEY_ID && 
+    process.env.AWS_SECRET_ACCESS_KEY;
+  
+  if (hasEnvCredentials) {
+    // Use environment variables directly (highest priority)
+    return {
+      region,
+      credentials: async () => ({
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+        sessionToken: process.env.AWS_SESSION_TOKEN,
+      }),
+    };
+  }
+  
+  // Use profile if specified and not "default" (which would use default chain anyway)
+  if (options.awsProfile && options.awsProfile !== "default") {
+    return {
+      region,
       credentials: async () => {
         const { fromIni } = await import("@aws-sdk/credential-providers");
         const provider = fromIni({ profile: options.awsProfile });
         return provider();
       },
-    }),
+    };
+  }
+  
+  // Let AWS SDK use default credential chain (checks env vars, profiles, IAM roles, etc.)
+  return {
+    region,
   };
 }
 

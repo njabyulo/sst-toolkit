@@ -17,23 +17,32 @@ resourcesCommand
   .description("Find AWS resources by tags")
   .option("--tagMatch <match>", "Tag matching logic (AND or OR)", "AND")
   .option("--region <region>", "AWS region", process.env.AWS_REGION || "us-east-1")
-  .option("--profile <profile>", "AWS profile", process.env.AWS_PROFILE || "default")
+  .option("--profile <profile>", "AWS profile (defaults to AWS_PROFILE env var or 'default')", process.env.AWS_PROFILE || "default")
   .allowUnknownOption()
   .action(async (options: { tagMatch?: string; region?: string; profile?: string }) => {
     try {
       const args = process.argv;
       const findIndex = args.indexOf("find");
       const tags: Array<{ key: string; value: string }> = [];
+      let profile = options.profile;
 
       for (let i = findIndex + 1; i < args.length; i++) {
         if (args[i] === "--tag" && i + 2 < args.length) {
           tags.push({ key: args[i + 1], value: args[i + 2] });
           i += 2;
-        } else if (args[i] === "--tagMatch" || args[i] === "--region" || args[i] === "--profile") {
+        } else if (args[i] === "--profile" && i + 1 < args.length) {
+          profile = args[i + 1];
+          i++;
+        } else if (args[i] === "--tagMatch" || args[i] === "--region") {
           i++;
         } else if (args[i].startsWith("--")) {
           // Other options, skip
         }
+      }
+
+      // Use AWS_PROFILE env var if no profile was explicitly provided
+      if (!profile || profile === "default") {
+        profile = process.env.AWS_PROFILE || undefined;
       }
 
       if (tags.length === 0) {
@@ -46,7 +55,7 @@ resourcesCommand
         tags,
         tagMatch: (options.tagMatch?.toUpperCase() || "AND") as "AND" | "OR",
         region: options.region,
-        awsProfile: options.profile,
+        awsProfile: profile,
       });
     } catch (error) {
       process.stderr.write(`Failed to find resources: ${error instanceof Error ? error.message : String(error)}\n`);
@@ -59,7 +68,7 @@ resourcesCommand
   .description("Delete AWS resources by tags")
   .option("--tagMatch <match>", "Tag matching logic (AND or OR)", "AND")
   .option("--region <region>", "AWS region", process.env.AWS_REGION || "us-east-1")
-  .option("--profile <profile>", "AWS profile", process.env.AWS_PROFILE || "default")
+  .option("--profile <profile>", "AWS profile (defaults to AWS_PROFILE env var or 'default')", process.env.AWS_PROFILE || "default")
   .option("--dry-run", "Preview changes without deleting", false)
   .option("--force, -f", "Skip confirmation prompts", false)
   .allowUnknownOption()
@@ -70,20 +79,29 @@ resourcesCommand
       const tags: Array<{ key: string; value: string }> = [];
       let dryRun = false;
       let force = false;
+      let profile = options.profile;
 
       for (let i = deleteIndex + 1; i < args.length; i++) {
         if (args[i] === "--tag" && i + 2 < args.length) {
           tags.push({ key: args[i + 1], value: args[i + 2] });
           i += 2;
+        } else if (args[i] === "--profile" && i + 1 < args.length) {
+          profile = args[i + 1];
+          i++;
         } else if (args[i] === "--dry-run") {
           dryRun = true;
         } else if (args[i] === "--force" || args[i] === "-f") {
           force = true;
-        } else if (args[i] === "--tagMatch" || args[i] === "--region" || args[i] === "--profile") {
+        } else if (args[i] === "--tagMatch" || args[i] === "--region") {
           i++;
         } else if (args[i].startsWith("--")) {
           // Other options, skip
         }
+      }
+
+      // Use AWS_PROFILE env var if no profile was explicitly provided
+      if (!profile || profile === "default") {
+        profile = process.env.AWS_PROFILE || undefined;
       }
 
       if (tags.length === 0) {
@@ -96,7 +114,7 @@ resourcesCommand
         tags,
         tagMatch: (options.tagMatch?.toUpperCase() || "AND") as "AND" | "OR",
         region: options.region,
-        awsProfile: options.profile,
+        awsProfile: profile,
         dryRun: dryRun || options.dryRun || false,
         force: force || options.force || false,
       });
