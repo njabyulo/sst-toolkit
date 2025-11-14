@@ -2,9 +2,7 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import * as Templates from "@sst-toolkit/plugin-sdk/templates";
 import * as Generator from "@sst-toolkit/plugin-sdk/generator";
-import type { Commands } from "@sst-toolkit/shared/types/cli";
-
-type IGenerateAdapterOptions = Commands.IGenerateAdapterOptions;
+import type { IGenerateAdapterOptions } from "@sst-toolkit/shared/types/cli/commands";
 
 function validateComponentName(name: string): void {
   if (!name || name.trim() === "") {

@@ -3,9 +3,7 @@ import * as path from "path";
 import * as Templates from "@sst-toolkit/plugin-sdk/templates";
 import * as Generator from "@sst-toolkit/plugin-sdk/generator";
 
-import type { Commands } from "@sst-toolkit/shared/types/cli";
-
-type IGenerateComponentOptions = Commands.IGenerateComponentOptions;
+import type { IGenerateComponentOptions } from "@sst-toolkit/shared/types/cli/commands";
 
 function validateComponentName(name: string): void {
   if (!name || name.trim() === "") {

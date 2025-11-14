@@ -6,7 +6,7 @@
 import type { IResource, IFinderOptions, IRemoverOptions, IResourceFinder, IResourceRouter } from "@sst-toolkit/shared/types/cli/resources";
 import { getOptimalDeletionOrder, buildResourceGraph } from "@sst-toolkit/shared/utils/cli/graph";
 import { logger } from "@sst-toolkit/shared/utils/cli/logger";
-import { pLimit } from "@sst-toolkit/shared/utils/concurrency/concurrency";
+import { pLimit } from "@sst-toolkit/shared/utils/concurrency";
 
 export interface ICleanupService {
   findResources(options: IFinderOptions): Promise<IResource[]>;
