@@ -1,0 +1,155 @@
+---
+description: Export patterns and directory structure conventions for index.ts files
+globs: 
+  - "**/index.ts"
+  - "**/tsup.config.ts"
+  - "**/package.json"
+alwaysApply: true
+---
+# Export Patterns
+
+## Index.ts Files - Namespace Exports Only
+
+**CRITICAL**: All `index.ts` files MUST use namespace exports (`export * as Name from './file'`). NO re-exports (`export * from`).
+
+### Pattern
+
+```typescript
+// ✅ CORRECT - Namespace exports
+export * as Sst from "./sst";
+export * as Workflow from "./workflow";
+export * as Cli from "./cli";
+
+// ❌ WRONG - Re-exports (DO NOT USE)
+export * from "./sst";
+export * from "./workflow";
+```
+
+### Directory Structure
+
+All modules must be in their own directory with an `index.ts` file:
+
+```
+src/
+├── types/
+│   ├── sst/
+│   │   └── index.ts          ✅ Each module in its own directory
+│   ├── workflow/
+│   │   └── index.ts
+│   └── cli/
+│       ├── commands/
+│       │   └── index.ts
+│       ├── resources/
+│       │   └── index.ts
+│       └── index.ts
+└── utils/
+    ├── cli/
+    │   ├── logger/
+    │   │   └── index.ts
+    │   ├── parser/
+    │   │   └── index.ts
+    │   └── index.ts
+    └── concurrency/
+        └── index.ts
+```
+
+### tsup.config.ts
+
+**CRITICAL**: `tsup.config.ts` MUST only have `index.ts` entries. Never reference specific files within directories.
+
+```typescript
+// ✅ CORRECT
+entry: [
+  "src/index.ts",
+  "src/types/index.ts",
+  "src/types/sst/index.ts",        // ✅ index.ts only
+  "src/types/workflow/index.ts",   // ✅ index.ts only
+  "src/types/cli/index.ts",
+  "src/types/cli/commands/index.ts",
+]
+
+// ❌ WRONG
+entry: [
+  "src/types/sst.ts",              // ❌ No direct .ts files
+  "src/utils/cli/logger.ts",       // ❌ No direct .ts files
+]
+```
+
+### package.json Exports
+
+All wildcard exports MUST point to `index` files:
+
+```json
+{
+  "exports": {
+    "./types/*": {
+      "types": "./dist/types/*/index.d.ts",      // ✅ Points to index
+      "import": "./dist/types/*/index.mjs",
+      "require": "./dist/types/*/index.js"
+    },
+    "./utils/*": {
+      "types": "./dist/utils/*/index.d.ts",      // ✅ Points to index
+      "import": "./dist/utils/*/index.mjs",
+      "require": "./dist/utils/*/index.js"
+    }
+  }
+}
+```
+
+## Examples
+
+### Good: Types Index
+
+```typescript
+// packages/shared/src/types/index.ts
+export * as Sst from "./sst";
+export * as Workflow from "./workflow";
+export * as Cli from "./cli";
+```
+
+### Good: CLI Utils Index
+
+```typescript
+// packages/shared/src/utils/cli/index.ts
+export * as Logger from "./logger";
+export * as Parser from "./parser";
+export * as Config from "./config";
+export * as Confirmation from "./confirmation";
+export * as RemoverBase from "./remover-base";
+export * as PluginLoader from "./plugin-loader";
+export * as Registry from "./registry";
+export * as Graph from "./graph";
+export * as Base from "./base";
+```
+
+### Bad: Re-exports
+
+```typescript
+// ❌ DO NOT USE
+export * from "./sst";
+export * from "./workflow";
+export { logger, colors } from "./logger";
+```
+
+## Usage
+
+When importing, use namespace pattern:
+
+```typescript
+// ✅ CORRECT
+import { Types } from "@sst-toolkit/shared/types";
+import { Utils } from "@sst-toolkit/shared/utils";
+import { Cli } from "@sst-toolkit/shared/types/cli";
+
+// Access via namespace
+const resource: Types.Sst.ISSTResource = { ... };
+const logger = Utils.Cli.Logger.logger;
+```
+
+Or direct imports:
+
+```typescript
+// ✅ ALSO CORRECT
+import { ISSTResource } from "@sst-toolkit/shared/types/sst";
+import { logger } from "@sst-toolkit/shared/utils/cli/logger";
+```

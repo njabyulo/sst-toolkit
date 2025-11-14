@@ -7,9 +7,14 @@ alwaysApply: true
 
 ## Export Patterns
 
-- **index.ts files** (excluding db): Use namespace export pattern `export * as File from './file'`
+**CRITICAL**: All `index.ts` files MUST use namespace exports (`export * as Name from './file'`). NO re-exports (`export * from`).
+
+- **index.ts files**: Use namespace export pattern `export * as File from './file'`
 - **All index.ts files** must only use namespace exports and contain no other code
+- **Do NOT** use re-exports (`export * from`) - always use namespace exports
 - **Do NOT** re-export commonly used types/interfaces for convenience - import them directly from their source
+
+**See `export-patterns.mdc` for detailed export patterns and directory structure requirements.**
 
 ## Naming Conventions
 
@@ -19,9 +24,34 @@ alwaysApply: true
 
 ## Code Organization
 
-- **Interfaces**: All interfaces must be in `packages/shared/src`
-- **Types**: All types must be in `packages/shared/src`
-- **Zod Schemas**: All zod schemas must be in `packages/shared/src`
+### Directory Structure
+
+- **All modules must be in their own directory with an `index.ts` file**
+- **Never place `.ts` files directly in parent directories** - always use `module-name/index.ts` pattern
+- **tsup.config.ts entries**: MUST only reference `index.ts` files, never specific `.ts` files within directories
+- **package.json exports**: All wildcard exports MUST point to `index` files using `*/index.d.ts` pattern
+
+### Shared Package Structure
+
+- **Interfaces**: All interfaces must be in `packages/shared/src/types/`
+- **Types**: All types must be in `packages/shared/src/types/`
+- **Zod Schemas**: All zod schemas must be in `packages/shared/src/schemas/`
+- **Utils**: All utilities must be in `packages/shared/src/utils/`
+- **Constants**: All constants must be in `packages/shared/src/constants/`
+
+### Module Organization
+
+- Group related utilities/modules in their own directories
+- Each module gets its own directory: `module-name/index.ts`
+- Example structure:
+  ```
+  src/types/cli/
+    ├── commands/
+    │   └── index.ts
+    ├── resources/
+    │   └── index.ts
+    └── index.ts
+  ```
 
 ## Code Quality
 
