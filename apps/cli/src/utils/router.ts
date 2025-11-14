@@ -5,10 +5,10 @@
 
 import type { IResource, IRemoverOptions, IRemoverResult } from "../resources/types.js";
 import type { IResourceRouter } from "../resources/interfaces.js";
-import { removeComputeResource } from "../compute/remover.js";
-import { removeStorageResource } from "../storage/remover.js";
-import { removeNetworkingResource } from "../networking/remover.js";
-import { removeSecurityResource } from "../security/remover.js";
+import { removeComputeResource } from "../internal/resources/compute/remover.js";
+import { removeStorageResource } from "../internal/resources/storage/remover.js";
+import { removeNetworkingResource } from "../internal/resources/networking/remover.js";
+import { removeSecurityResource } from "../internal/resources/security/remover.js";
 
 /**
  * Service-to-category mapping

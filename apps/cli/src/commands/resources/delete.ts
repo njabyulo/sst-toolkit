@@ -3,11 +3,7 @@
  * Deletes AWS resources by tags
  */
 
-import { ComputeResourceFinder } from "../../compute/finder.js";
-import { StorageResourceFinder } from "../../storage/finder.js";
-import { NetworkingResourceFinder } from "../../networking/finder.js";
-import { SecurityResourceFinder } from "../../security/finder.js";
-import { CleanupService } from "../../services/cleanup-service.js";
+import * as InternalResources from "../../internal/resources/index.js";
 import { ResourceRouter } from "../../utils/router.js";
 import { logger, colors } from "../../utils/logger.js";
 import { requireConfirmation } from "../../utils/confirmation.js";
@@ -38,13 +34,13 @@ export async function deleteResources(options: IDeleteCommandOptions): Promise<v
 
   // Initialize services (Dependency Injection)
   const finders = [
-    new ComputeResourceFinder(),
-    new StorageResourceFinder(),
-    new NetworkingResourceFinder(),
-    new SecurityResourceFinder(),
+    new InternalResources.Compute.ComputeResourceFinder(),
+    new InternalResources.Storage.StorageResourceFinder(),
+    new InternalResources.Networking.NetworkingResourceFinder(),
+    new InternalResources.Security.SecurityResourceFinder(),
   ];
   const router = new ResourceRouter();
-  const cleanupService = new CleanupService(finders, router);
+  const cleanupService = new InternalResources.Services.CleanupService(finders, router);
 
   // Build finder options from tags
   const finderOptions: IFinderOptions = {
@@ -88,7 +84,7 @@ export async function deleteResources(options: IDeleteCommandOptions): Promise<v
 
   logger.log("Resources to delete:");
   for (const [service, serviceResources] of Object.entries(byService)) {
-    logger.log(`  ${service}: ${serviceResources.length} resource(s)`, colors.gray);
+    logger.log(`  ${service}: ${(serviceResources as typeof resources).length} resource(s)`, colors.gray);
   }
   console.log("");
 
