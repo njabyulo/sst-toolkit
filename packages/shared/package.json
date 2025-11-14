@@ -20,10 +20,10 @@
       "default": "./dist/types/index.mjs"
     },
     "./types/*": {
-      "types": "./dist/types/*.d.ts",
-      "import": "./dist/types/*.mjs",
-      "require": "./dist/types/*.js",
-      "default": "./dist/types/*.mjs"
+      "types": "./dist/types/*/index.d.ts",
+      "import": "./dist/types/*/index.mjs",
+      "require": "./dist/types/*/index.js",
+      "default": "./dist/types/*/index.mjs"
     },
     "./types/cli": {
       "types": "./dist/types/cli/index.d.ts",
@@ -32,10 +32,10 @@
       "default": "./dist/types/cli/index.mjs"
     },
     "./types/cli/*": {
-      "types": "./dist/types/cli/*.d.ts",
-      "import": "./dist/types/cli/*.mjs",
-      "require": "./dist/types/cli/*.js",
-      "default": "./dist/types/cli/*.mjs"
+      "types": "./dist/types/cli/*/index.d.ts",
+      "import": "./dist/types/cli/*/index.mjs",
+      "require": "./dist/types/cli/*/index.js",
+      "default": "./dist/types/cli/*/index.mjs"
     },
     "./utils": {
       "types": "./dist/utils/index.d.ts",
@@ -44,10 +44,10 @@
       "default": "./dist/utils/index.mjs"
     },
     "./utils/*": {
-      "types": "./dist/utils/*.d.ts",
-      "import": "./dist/utils/*.mjs",
-      "require": "./dist/utils/*.js",
-      "default": "./dist/utils/*.mjs"
+      "types": "./dist/utils/*/index.d.ts",
+      "import": "./dist/utils/*/index.mjs",
+      "require": "./dist/utils/*/index.js",
+      "default": "./dist/utils/*/index.mjs"
     },
     "./utils/cli": {
       "types": "./dist/utils/cli/index.d.ts",
@@ -56,10 +56,10 @@
       "default": "./dist/utils/cli/index.mjs"
     },
     "./utils/cli/*": {
-      "types": "./dist/utils/cli/*.d.ts",
-      "import": "./dist/utils/cli/*.mjs",
-      "require": "./dist/utils/cli/*.js",
-      "default": "./dist/utils/cli/*.mjs"
+      "types": "./dist/utils/cli/*/index.d.ts",
+      "import": "./dist/utils/cli/*/index.mjs",
+      "require": "./dist/utils/cli/*/index.js",
+      "default": "./dist/utils/cli/*/index.mjs"
     },
     "./utils/concurrency": {
       "types": "./dist/utils/concurrency/index.d.ts",
