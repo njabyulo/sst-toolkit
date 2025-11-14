@@ -10,7 +10,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "lint": "pnpm lint:type && pnpm lint:code",
     "lint:code": "eslint .",
     "lint:type": "tsc --noEmit",
