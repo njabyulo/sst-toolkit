@@ -114,7 +114,8 @@ export class SecurityResourceFinder implements IResourceFinder {
       } while (marker);
 
       // Parallelize tag queries (N queries in parallel with concurrency limit)
-      const { pLimit } = await import("@sst-toolkit/shared/utils/concurrency");
+      const { Concurrency } = await import("@sst-toolkit/shared/utils/concurrency");
+      const pLimit = Concurrency.pLimit;
       
       const roleResults = await pLimit(
         allRoles,
