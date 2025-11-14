@@ -11,9 +11,9 @@ import {
   GetResourcesCommand,
 } from "@aws-sdk/client-resource-groups-tagging-api";
 import { IAMClient, ListRolesCommand, ListRoleTagsCommand } from "@aws-sdk/client-iam";
-import { createClientConfig, parseResourceARN } from "../resources/base.js";
-import type { IResourceFinder } from "../resources/interfaces.js";
-import type { IFinderOptions, IResource } from "../resources/types.js";
+import { createClientConfig, parseResourceARN } from "../../resources/base.js";
+import type { IResourceFinder } from "../../resources/interfaces.js";
+import type { IFinderOptions, IResource } from "../../resources/types.js";
 
 export class SecurityResourceFinder implements IResourceFinder {
   async find(options: IFinderOptions): Promise<IResource[]> {

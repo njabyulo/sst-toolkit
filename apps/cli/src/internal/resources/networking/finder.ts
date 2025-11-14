@@ -3,9 +3,9 @@
  * Finds API Gateway, EventBridge, CloudWatch, EC2, and Service Discovery resources
  */
 
-import { findResourcesByTags } from "../resources/base.js";
-import type { IResourceFinder } from "../resources/interfaces.js";
-import type { IFinderOptions } from "../resources/types.js";
+import { findResourcesByTags } from "../../resources/base.js";
+import type { IResourceFinder } from "../../resources/interfaces.js";
+import type { IFinderOptions } from "../../resources/types.js";
 
 export class NetworkingResourceFinder implements IResourceFinder {
   private readonly services = ["apigateway", "events", "logs", "ec2", "servicediscovery", "cloudwatch"];

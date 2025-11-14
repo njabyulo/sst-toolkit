@@ -3,9 +3,9 @@
  * Finds Lambda functions and event source mappings
  */
 
-import { findResourcesByTags } from "../resources/base.js";
-import type { IResourceFinder } from "../resources/interfaces.js";
-import type { IFinderOptions } from "../resources/types.js";
+import { findResourcesByTags } from "../../resources/base.js";
+import type { IResourceFinder } from "../../resources/interfaces.js";
+import type { IFinderOptions } from "../../resources/types.js";
 
 export class ComputeResourceFinder implements IResourceFinder {
   async find(options: IFinderOptions) {

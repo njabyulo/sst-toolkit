@@ -4,9 +4,9 @@
  */
 
 import { LambdaClient, DeleteFunctionCommand, DeleteEventSourceMappingCommand } from "@aws-sdk/client-lambda";
-import type { IResource, IRemoverOptions, IRemoverResult } from "../resources/types.js";
-import { createClientConfig } from "../resources/base.js";
-import { BaseResourceRemover } from "../utils/remover-base.js";
+import type { IResource, IRemoverOptions, IRemoverResult } from "../../resources/types.js";
+import { createClientConfig } from "../../resources/base.js";
+import { BaseResourceRemover } from "../../utils/remover-base.js";
 
 export class ComputeResourceRemover extends BaseResourceRemover {
   async remove(resource: IResource, options: IRemoverOptions = {}): Promise<IRemoverResult> {

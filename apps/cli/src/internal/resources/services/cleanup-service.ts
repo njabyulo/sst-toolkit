@@ -3,11 +3,11 @@
  * Orchestrates resource cleanup (SRP, DIP)
  */
 
-import type { IResource, IFinderOptions, IRemoverOptions } from "../resources/types.js";
-import type { IResourceFinder, IResourceRouter } from "../resources/interfaces.js";
-import { getOptimalDeletionOrder, buildResourceGraph } from "../resources/graph.js";
-import { logger } from "../utils/logger.js";
-import { pLimit } from "../utils/concurrency.js";
+import type { IResource, IFinderOptions, IRemoverOptions } from "../../resources/types.js";
+import type { IResourceFinder, IResourceRouter } from "../../resources/interfaces.js";
+import { getOptimalDeletionOrder, buildResourceGraph } from "../../resources/graph.js";
+import { logger } from "../../utils/logger.js";
+import { pLimit } from "../../utils/concurrency.js";
 
 export interface ICleanupService {
   findResources(options: IFinderOptions): Promise<IResource[]>;
