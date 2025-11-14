@@ -4,11 +4,12 @@ A visual web application for exploring and analyzing SST (Serverless Stack) infr
 
 ## Features
 
+- **File Upload**: Upload and visualize SST state files directly in the browser
 - **Visual State Explorer**: Browse your SST resources in an interactive interface
-- **Workflow Builder**: Visualize resource relationships and dependencies
+- **Workflow Visualization**: Visualize resource relationships and dependencies in an interactive graph
+- **Pending Operations**: View and manage pending operations (create, update, delete, replace)
 - **Resource Details**: Inspect individual resources with full metadata
-- **Search & Filter**: Quickly find resources by type, name, or properties
-- **Cost Estimation**: Get insights into your infrastructure costs
+- **Global Search**: Quickly find resources by name, type, URN, or category (⌘K / Ctrl+K)
 
 ## Getting Started
 
@@ -48,53 +49,72 @@ pnpm preview
 
 ### Exporting SST State
 
-Before using the Explorer, you need to export your SST state from your SST project:
+Before using the Explorer, export your SST state from your SST project:
 
 ```bash
 # From your SST project directory
 # Export state for a specific stage (e.g., dev, staging, prod)
-npx sst state export --stage dev > /path/to/sst-toolkit/apps/explorer/public/misc/state.json
-
-# Example with absolute path
-npx sst state export --stage dev > ~/Documents/development/playground/oss/sst-toolkit/apps/explorer/public/misc/state.json
-
-# Or use relative path from your SST project
-npx sst state export --stage dev > ../sst-toolkit/apps/explorer/public/misc/state.json
+npx sst state export --stage dev > state.json
 ```
-
-**Note**: Replace `/path/to/sst-toolkit` with the actual path to your sst-toolkit repository, and adjust the stage name (`dev`, `staging`, `prod`, etc.) as needed.
 
 ### Using the Explorer
 
-1. **Export State**: Run the export command above from your SST project
-2. **Start Explorer**: Start the development server (see Development section)
-3. **Load State**: The Explorer automatically loads state from `/public/misc/state.json`
-4. **Explore**: Navigate through resources using the sidebar
-5. **Visualize**: Switch to workflow view to see resource relationships
-6. **Inspect**: Click on resources to view detailed information
+1. **Start Explorer**: Start the development server (see Development section)
+2. **Upload State**: Click the "Upload State File" button and select your exported `state.json` file
+3. **Explore**: Navigate through resources using the Explorer tab
+4. **View Pending**: Check the Pending tab to see any pending operations (if available)
+5. **Visualize**: Switch to Workflow tab to see resource relationships
+6. **Search**: Use global search (⌘K / Ctrl+K) to quickly find resources
+7. **Inspect**: Click on resources to view detailed information
 
 ## Features in Detail
 
+### File Upload
+
+- Upload SST state files directly in the browser
+- No need to manually place files in specific directories
+- Supports any valid SST state JSON file
+- Automatic validation and error handling
+
 ### State Explorer
 
-- Tree view of all resources
+- Tree view of all resources organized by type
 - Resource type filtering
-- Search functionality
+- Search functionality within the resource list
 - Resource status indicators
+- Click to view detailed resource information
 
-### Workflow Builder
+### Pending Operations
 
-- Visual node-based representation
-- Relationship visualization
+- View all pending operations (create, update, delete, replace)
+- Grouped by operation type and resource category
+- Search and filter pending operations
+- Visual indicators for different operation types
+- Click to view resource details
+
+### Workflow Visualization
+
+- Visual node-based representation of your infrastructure
+- Relationship visualization between resources
 - Dependency tracking
 - Interactive canvas with zoom and pan
+- Click nodes to view resource details
 
 ### Resource Inspector
 
-- Full resource metadata
+- Full resource metadata display
 - Output values
 - Dependencies and relationships
 - Link properties
+- Resource type and provider information
+
+### Global Search
+
+- Quick search across all resources (⌘K / Ctrl+K)
+- Search by name, type, URN, or category
+- Results ranked by relevance
+- Visual indicators for pending resources
+- Keyboard navigation support
 
 ## Development
 
