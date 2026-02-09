@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, memo } from "react";
-import { Clock, Search, ChevronRight, ChevronDown } from "lucide-react";
+import { Clock, Search } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";
@@ -64,7 +64,7 @@ const PendingOperationItem = memo(function PendingOperationItem({
         isSelected
           ? "bg-primary/10 border border-primary/20"
           : "hover:bg-muted/50 cursor-pointer border border-transparent"
-      }`}
+      } [content-visibility:auto] [contain-intrinsic-size:0_64px]`}
       onClick={handleClick}
     >
       <ResourceIcon type={resource.type} resource={resource} />
@@ -273,4 +273,3 @@ export function PendingOperationsList({
     </Card>
   );
 }
-

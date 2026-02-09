@@ -93,7 +93,7 @@ const ResourceItem = memo(function ResourceItem({
   // Memoize expensive calculations
   const resourceName = useMemo(() => State.getResourceName(node.resource), [node.resource]);
   const typeDisplay = useMemo(() => State.getResourceTypeDisplay(node.resource.type), [node.resource.type]);
-  const category = useMemo(() => State.getResourceTypeCategory(node.resource.type, node.resource), [node.resource.type, node.resource]);
+  const category = useMemo(() => State.getResourceTypeCategory(node.resource.type, node.resource), [node.resource]);
   const subCategory = useMemo(() => extractSubCategory(category), [category]);
   
   const handleClick = useCallback(() => {
@@ -112,7 +112,7 @@ const ResourceItem = memo(function ResourceItem({
           isSelected
             ? "bg-primary text-primary-foreground"
             : "hover:bg-accent hover:text-accent-foreground"
-        }`}
+        } [content-visibility:auto] [contain-intrinsic-size:0_56px]`}
         style={{ paddingLeft: `${12 + level * 20}px` }}
         onClick={handleClick}
       >
